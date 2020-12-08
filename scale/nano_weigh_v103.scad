@@ -11,8 +11,8 @@
 use <OpenSCAD_Libs/nano.scad>
 use <OpenSCAD_Libs/hx711.scad>
 use <Batteries_in_OpenSCAD/batteries.scad>
-include <OpenSCAD_Libs/models/096OledDim.scad>; // OLED screen dimensions
-use <OpenSCAD_Libs/models/096Oled.scad>; // OLED screen model
+include <OpenSCAD_Libs/models/096OledDim.scad>;
+use <OpenSCAD_Libs/models/096Oled.scad>;
 use <OpenSCAD_Libs/oled_096.scad>
 
 /* [Box dimensions] */
