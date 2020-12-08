@@ -26,10 +26,15 @@ Vent          = 0;   // Decorations to ventilation holes [0:No, 1:Yes]
 Vent_width    = 1.5; // Holes width (in mm)  
 txt           = "HeartyGFX"; // Text you want
 TxtSize       = 3;   // Font size  
-Police        ="Arial Black"; // Font
+Police        = "Arial Black"; // Font
 Filet         = 2;   // Filet diameter [0.1:12] 
 Resolution    = 50;  // Filet smoothness [1:100] 
 m             = 0.9; // Tolerance (Panel/rails gap)
+
+/* [PCB options] */
+PCBPosX = 9;
+PCBPosY = 8;
+PCBDist =  26;
 
 /* [Display options] */
 OledPosX = Length-7;
@@ -51,7 +56,7 @@ Dec_Thick = Vent ? Thick*2 : Thick; // Thick X 2 - make sure they go through she
 Dec_size  = Vent ? Thick*2 : 0.8; // Depth decoration
 
 /////////// - Generic Fileted box - //////////
-module RoundBox($a=Length, $b=Width, $c=Height){// Cube bords arrondis
+module RoundBox($a=Length, $b=Width, $c=Height){
                     $fn=Resolution;            
                     translate([0,Filet,Filet]){  
                     minkowski (){                                              
@@ -62,7 +67,6 @@ module RoundBox($a=Length, $b=Width, $c=Height){// Cube bords arrondis
                         }
                     }
                 }// End of RoundBox Module
-
       
 ////////////////////////////////// - Module Shell - //////////////////////////////////         
 module Shell(){// Shell  
@@ -79,21 +83,21 @@ module Shell(){// Shell
                                 translate([Thick/2,Thick/2,Thick/2]){     
                                         RoundBox($a=Length-Thick, $b=Width-Thick, $c=Height-Thick);
                                         }
-                                        }//Fin diff Shell                            
-                                difference(){//largeur Rails        
+                                        }//End diff Shell                            
+                                difference(){//larger Rails        
                                      translate([Thick+m,Thick/2,Thick/2]){// Rails
                                           RoundBox($a=Length-((2*Thick)+(2*m)), $b=Width-Thick, $c=Height-(Thick*2));
-                                                          }//fin Rails
+                                                          }//End Rails
                                      translate([((Thick+m/2)*1.55),Thick/2,Thick/2+0.1]){ // +0.1 added to avoid the artefact
                                           RoundBox($a=Length-((Thick*3)+2*m), $b=Width-Thick, $c=Height-Thick);
                                                     }           
-                                                }//Fin largeur Rails
-                                    }//Fin union                                   
+                                                }//End larger Rails
+                                    }//End union                                   
                                translate([-Thick,-Thick,Height/2]){// Cube à soustraire
                                     cube ([Length+100, Width+100, Height], center=false);
                                             }                                            
-                                      }//fin soustraction cube median - End Median cube slicer
-                               translate([-Thick/2,Thick,Thick]){// Forme de soustraction centrale 
+                                      }// End Median cube slicer
+                               translate([-Thick/2,Thick,Thick]){
                                     RoundBox($a=Length+Thick, $b=Width-Thick*2, $c=Height-Thick);       
                                     }                          
                                 }                                          
@@ -124,7 +128,7 @@ module Shell(){// Shell
                            translate([0,-(Thick*1.46),Height/2]){
                                 cube([Length,Thick*2,10]);
                            }
-                    } //Fin fixation box legs
+                    } //End fixation box legs
             }
 
         union(){// outbox sides decorations
@@ -146,10 +150,10 @@ module Shell(){// Shell
                     }
   
                 
-                    }// fin de for
+                    }// End de for
                // }
-                }//fin union decoration
-            }//fin difference decoration
+                }//End union decoration
+            }//End difference decoration
 
 
             union(){ //sides holes
@@ -174,10 +178,10 @@ module Shell(){// Shell
                     cylinder(d=2,20);
                     }
                 }
-            }//fin de sides holes
+            }//End de sides holes
 
-        }//fin de difference holes
-}// fin Shell 
+        }//End de difference holes
+}// End Shell 
 
 ///////////////////////////////// - Module Front/Back Panels - //////////////////////////
 module Panels(){// Panels
@@ -215,16 +219,12 @@ if(FPanel==1) {
             rotate([90,0,90])
                 oled_cutout();
     }
-
-    // OLED posts
-    translate([OledPosX, OledPosY, OledPosZ])
-        rotate([90,0,90])
-            oled_posts();
- 
-    // OLED
-    translate([OledPosX, OledPosY, OledPosZ])
-        rotate([90,0,90])
-            DisplayModule(type=I2C4, align=1, G_COLORS=true);
+    color(Color2) {
+        // OLED posts
+        translate([OledPosX, OledPosY, OledPosZ])
+            rotate([90,0,90])
+                oled_posts();
+    }
 }
 
 // Front text
@@ -257,20 +257,25 @@ color(Color1,1){
 
 if(Components==1){
 	// Nano
-	translate([5, 6, Thick/2]) {
-		%nano();
-		nano_mount();
+	translate([PCBPosX, PCBPosY, Thick/2]) {
+		%nano(h=6);
+		nano_mount(h=6);
     }
 
 	// HX711
-	translate([5, 36, Thick/2]) {
-		%hx711();
-		hx711_mount();
+	translate([PCBPosX, PCBPosY+PCBDist, Thick/2]) {
+		%hx711(h=6);
+		hx711_mount(h=6);
     }
 
 	// Battery
 	translate([56, 6, Thick/2])
 	rotate([90,270,180]) %9V();
+    
+    // OLED
+    translate([OledPosX, OledPosY, OledPosZ])
+        rotate([90,0,90])
+            DisplayModule(type=I2C4, align=1, G_COLORS=true);
 }
 
 
