@@ -1,117 +1,56 @@
-
-/*//////////////////////////////////////////////////////////////////
-              -    FB Aka Heartman/Hearty 2016     -                   
-              -   http://heartygfx.blogspot.com    -                  
-              -       OpenScad Parametric Box      -                     
-              -         CC BY-NC 3.0 License       -                      
-////////////////////////////////////////////////////////////////////                                                                                                             
-12/02/2016 - Fixed minor bug 
-28/02/2016 - Added holes ventilation option                    
-09/03/2016 - Added PCB feet support, fixed the shell artefact on export mode. 
-
-*/////////////////////////// - Info - //////////////////////////////
-
+/////////////////////////// - Info - //////////////////////////////
 // All coordinates are starting as integrated circuit pins.
 // From the top view :
-
 //   CoordD           <---       CoordC
 //                                 ^
 //                                 ^
 //                                 ^
 //   CoordA           --->       CoordB
-
-
 ////////////////////////////////////////////////////////////////////
+
 use <OpenSCAD_Libs/nano.scad>
 use <OpenSCAD_Libs/hx711.scad>
 use <Batteries_in_OpenSCAD/batteries.scad>
-include <OpenSCAD_Libs/models/096OledDim.scad>
-use <OpenSCAD_Libs/models/096Oled.scad>
-
-////////// - Box parameters - /////////////
+include <OpenSCAD_Libs/models/096OledDim.scad>; // OLED screen dimensions
+use <OpenSCAD_Libs/models/096Oled.scad>; // OLED screen model
+use <OpenSCAD_Libs/oled_096.scad>
 
 /* [Box dimensions] */
-// Length  
-  Length        = 100;       
-// Width
-  Width         = 64;                     
-// Height  
-  Height        = 40;  
-// Wall thickness  
-  Thick         = 2;//[2:5]  
+Length        = 100; // Length 
+Width         = 64;  // Width
+Height        = 42;  // Height  
+Thick         = 3;   // Wall thickness [2:5]  
   
 /* [Box options] */
-// Decorations to ventilation holes
-  Vent          = 0;// [0:No, 1:Yes]
-// Holes width (in mm)
-  Vent_width    = 1.5;   
-// Text you want
-  txt           = "HeartyGFX";           
-// Font size  
-  TxtSize       = 3;                 
-// Font  
-  Police        ="Arial Black"; 
-// Filet diameter  
-  Filet         = 2;//[0.1:12] 
-// Filet smoothness  
-  Resolution    = 50;//[1:100] 
-// Tolerance (Panel/rails gap)
-  m             = 0.9;
-  
-/* [PCB_Feet--the_board_will_not_be_exported) ] */
-//All dimensions are from the center foot axis
-// Low left corner X position
-PCBPosX         = 7;
-// Low left corner Y position
-PCBPosY         = 6;
-// PCB Length
-PCBLength       = 70;
-// PCB Width
-PCBWidth        = 50;
-// Feet height
-FootHeight      = 10;
-// Foot diameter
-FootDia         = 8;
-// Hole diameter
-FootHole        = 3;  
-  
-OledPosX = Length-5;
+Vent          = 0;   // Decorations to ventilation holes [0:No, 1:Yes]
+Vent_width    = 1.5; // Holes width (in mm)  
+txt           = "HeartyGFX"; // Text you want
+TxtSize       = 3;   // Font size  
+Police        ="Arial Black"; // Font
+Filet         = 2;   // Filet diameter [0.1:12] 
+Resolution    = 50;  // Filet smoothness [1:100] 
+m             = 0.9; // Tolerance (Panel/rails gap)
+
+/* [Display options] */
+OledPosX = Length-7;
 OledPosY = Width/2;
 OledPosZ = Height/2;
 
-
 /* [STL element to export] */
-// Top shell
-  TShell        = 0;// [0:No, 1:Yes]
-// Bottom shell
-  BShell        = 1;// [0:No, 1:Yes]
-// Back panel  
-  BPanel        = 1;// [0:No, 1:Yes]
-// Front panel
-  FPanel        = 1;// [0:No, 1:Yes]
-// Front text
-  Text          = 0;// [0:No, 1:Yes]
-//Arduino Uno
-  Components    = 1;// [0:No, 1:Yes]
-
+TShell        = 0;   // Top shell [0:No, 1:Yes]
+BShell        = 1;   // Bottom shell [0:No, 1:Yes]
+BPanel        = 1;   // Back panel [0:No, 1:Yes]
+FPanel        = 1;   // Front panel [0:No, 1:Yes]
+Text          = 0;   // Front text [0:No, 1:Yes]
+Components    = 1;   // Arduino parts [0:No, 1:Yes]
   
 /* [Hidden] */
-// Shell color  
-Couleur1        = "Orange";       
-// Panels color    
-Couleur2        = "OrangeRed";    
-// Thick X 2 - making decorations thicker if it is a vent to make sure they go through shell
-Dec_Thick       = Vent ? Thick*2 : Thick; 
-// - Depth decoration
-Dec_size        = Vent ? Thick*2 : 0.8;
-
-//////////////////// Oversize PCB limitation -Actually disabled - ////////////////////
-PCBL=PCBLength;
-PCBW=PCBWidth;
-
+Color1    = "Orange";    // Shell color  
+Color2    = "OrangeRed"; // Panels color    
+Dec_Thick = Vent ? Thick*2 : Thick; // Thick X 2 - make sure they go through shell
+Dec_size  = Vent ? Thick*2 : 0.8; // Depth decoration
 
 /////////// - Generic Fileted box - //////////
-
 module RoundBox($a=Length, $b=Width, $c=Height){// Cube bords arrondis
                     $fn=Resolution;            
                     translate([0,Filet,Filet]){  
@@ -126,22 +65,21 @@ module RoundBox($a=Length, $b=Width, $c=Height){// Cube bords arrondis
 
       
 ////////////////////////////////// - Module Shell - //////////////////////////////////         
-
-module Coque(){// Shell  
+module Shell(){// Shell  
     Thick = Thick*2;  
     difference(){    
         difference(){//sides decoration
             union(){    
-                     difference() {//soustraction de la forme centrale - Substraction Fileted box
+                     difference() {// Substraction Fileted box
                       
-                        difference(){//soustraction cube median - Median cube slicer
-                            union() {//union               
-                            difference(){//Coque    
+                        difference(){// Median cube slicer
+                            union() {// Union               
+                            difference(){//S hell    
                                 RoundBox();
                                 translate([Thick/2,Thick/2,Thick/2]){     
                                         RoundBox($a=Length-Thick, $b=Width-Thick, $c=Height-Thick);
                                         }
-                                        }//Fin diff Coque                            
+                                        }//Fin diff Shell                            
                                 difference(){//largeur Rails        
                                      translate([Thick+m,Thick/2,Thick/2]){// Rails
                                           RoundBox($a=Length-((2*Thick)+(2*m)), $b=Width-Thick, $c=Height-(Thick*2));
@@ -239,15 +177,11 @@ module Coque(){// Shell
             }//fin de sides holes
 
         }//fin de difference holes
-}// fin coque 
-
-////////////////////////////// - Experiment - ///////////////////////////////////////////
-
+}// fin Shell 
 
 ///////////////////////////////// - Module Front/Back Panels - //////////////////////////
-                            
 module Panels(){// Panels
-    color(Couleur2){
+    color(Color2){
         translate([Thick+m,m/2,m/2]){
              difference(){
                   translate([0,Thick,Thick]){ 
@@ -258,26 +192,7 @@ module Panels(){// Panels
                 }
          }
 }
-  
-module Oled() {
-    //////////////////// - OLED - /////////////////////   
 
-    // Align the glass side of the PCB under the XY plane (align=1)
-    %DisplayModule(type=I2C4, align=1, G_COLORS=true);
-    
-    // Localize a cutout volume over the view area
-    DisplayLocalize(type=I2C4, align=0, dalign=1)
-        translate([0,0,6.0/2])
-            #cube([I2C4_LVW,I2C4_LVL,6.0], center=true);
-    // ... another one over the module glass...
-    DisplayLocalize(type=I2C4, align=1, dalign=2)
-        translate([0,0,(I2C4_LH+0.2)/2])
-            #cube([I2C4_LGW+0.2, I2C4_LGL+0.2, I2C4_LH+0.2], center=true);
-    // ... and the last one to cutout a volume for the OLED's internal flat cable
-    DisplayLocalize(type=I2C4, align=4, dalign=1)
-        translate([0,0,OLED[I2C4][0][2]/2])
-            #cube([I2C4_PCW,I2C4_PL-I2C4_LGL-I2C4_LGLO,I2C4_LH], center=true);
-}
 
 ///////////////////////////////////// - Main - ///////////////////////////////////////
 
@@ -288,22 +203,33 @@ translate ([-m/2,0,0]){
 }
 
 //Front Panel
-if(FPanel==1)
-difference() {
-    rotate([0,0,180]){
-        translate([-Length-m/2,-Width,0]){
-            Panels();
+if(FPanel==1) {
+    difference() {
+        rotate([0,0,180]){
+            translate([-Length-m/2,-Width,0]){
+                Panels();
+            }
         }
+        // OLED cutout
+        translate([OledPosX, OledPosY, OledPosZ])
+            rotate([90,0,90])
+                oled_cutout();
     }
+
+    // OLED posts
+    translate([OledPosX, OledPosY, OledPosZ])
+        rotate([90,0,90])
+            oled_posts();
+ 
     // OLED
     translate([OledPosX, OledPosY, OledPosZ])
         rotate([90,0,90])
-            Oled();       
+            DisplayModule(type=I2C4, align=1, G_COLORS=true);
 }
 
 // Front text
 if(Text==1)
-color(Couleur1){     
+color(Color1){     
      translate([Length-(Thick),Thick*4,(Height-(Thick*4+(TxtSize/2)))]){// x,y,z
           rotate([90,0,90]){
               linear_extrude(height = 0.25){
@@ -315,35 +241,36 @@ color(Couleur1){
 
 // Bottom shell
 if(BShell==1)
-color(Couleur1){ 
-Coque();
+color(Color1){ 
+	Shell();
 }
 
 // Top Shell
 if(TShell==1)
-color( Couleur1,1){
+color(Color1,1){
     translate([0,Width,Height+0.2]){
         rotate([0,180,180]){
-                Coque();
+                Shell();
                 }
         }
 }
 
-// Nano
-translate([5, 6, Thick/2]) {
-    %nano();
-    nano_mount();
+if(Components==1){
+	// Nano
+	translate([5, 6, Thick/2]) {
+		%nano();
+		nano_mount();
     }
-    
- // HX711
- translate([5, 36, Thick/2]) {
-    %hx711();
-    hx711_mount();
-    }
-    
-// Battery
-translate([56, 6, Thick/2])
-    rotate([90,270,180]) %9V();
 
+	// HX711
+	translate([5, 36, Thick/2]) {
+		%hx711();
+		hx711_mount();
+    }
+
+	// Battery
+	translate([56, 6, Thick/2])
+	rotate([90,270,180]) %9V();
+}
 
 
