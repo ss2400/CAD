@@ -22,79 +22,83 @@
 
 
 ////////////////////////////////////////////////////////////////////
-use <OpenSCAD_Arduino_Lib/nano.scad>
-use <OpenSCAD_Arduino_Lib/hx711.scad>
+use <OpenSCAD_Libs/nano.scad>
+use <OpenSCAD_Libs/hx711.scad>
 use <Batteries_in_OpenSCAD/batteries.scad>
+include <OpenSCAD_Libs/models/096OledDim.scad>
+use <OpenSCAD_Libs/models/096Oled.scad>
 
-////////// - Paramètres de la boite - Box parameters - /////////////
+////////// - Box parameters - /////////////
 
 /* [Box dimensions] */
-// - Longueur - Length  
+// Length  
   Length        = 100;       
-// - Largeur - Width
+// Width
   Width         = 64;                     
-// - Hauteur - Height  
+// Height  
   Height        = 40;  
-// - Epaisseur - Wall thickness  
+// Wall thickness  
   Thick         = 2;//[2:5]  
   
 /* [Box options] */
-// Pieds PCB - PCB feet (x4) 
-  PCBFeet       = 0;// [0:No, 1:Yes]
-// - Decorations to ventilation holes
+// Decorations to ventilation holes
   Vent          = 0;// [0:No, 1:Yes]
-// - Decoration-Holes width (in mm)
+// Holes width (in mm)
   Vent_width    = 1.5;   
-// - Text you want
+// Text you want
   txt           = "HeartyGFX";           
-// - Font size  
+// Font size  
   TxtSize       = 3;                 
-// - Font  
+// Font  
   Police        ="Arial Black"; 
-// - Diamètre Coin arrondi - Filet diameter  
+// Filet diameter  
   Filet         = 2;//[0.1:12] 
-// - lissage de l'arrondi - Filet smoothness  
+// Filet smoothness  
   Resolution    = 50;//[1:100] 
-// - Tolérance - Tolerance (Panel/rails gap)
+// Tolerance (Panel/rails gap)
   m             = 0.9;
   
 /* [PCB_Feet--the_board_will_not_be_exported) ] */
 //All dimensions are from the center foot axis
-// - Coin bas gauche - Low left corner X position
+// Low left corner X position
 PCBPosX         = 7;
-// - Coin bas gauche - Low left corner Y position
+// Low left corner Y position
 PCBPosY         = 6;
-// - Longueur PCB - PCB Length
+// PCB Length
 PCBLength       = 70;
-// - Largeur PCB - PCB Width
+// PCB Width
 PCBWidth        = 50;
-// - Heuteur pied - Feet height
+// Feet height
 FootHeight      = 10;
-// - Diamètre pied - Foot diameter
+// Foot diameter
 FootDia         = 8;
-// - Diamètre trou - Hole diameter
+// Hole diameter
 FootHole        = 3;  
   
+OledPosX = Length-5;
+OledPosY = Width/2;
+OledPosZ = Height/2;
+
 
 /* [STL element to export] */
-//Coque haut - Top shell
+// Top shell
   TShell        = 0;// [0:No, 1:Yes]
-//Coque bas- Bottom shell
+// Bottom shell
   BShell        = 1;// [0:No, 1:Yes]
-//Panneau arrière - Back panel  
+// Back panel  
   BPanel        = 1;// [0:No, 1:Yes]
-//Panneau avant - Front panel
+// Front panel
   FPanel        = 1;// [0:No, 1:Yes]
-//Texte façade - Front text
+// Front text
   Text          = 0;// [0:No, 1:Yes]
 //Arduino Uno
   Components    = 1;// [0:No, 1:Yes]
 
   
 /* [Hidden] */
-// - Couleur coque - Shell color  
+// Shell color  
 Couleur1        = "Orange";       
-// - Couleur panneaux - Panels color    
+// Panels color    
 Couleur2        = "OrangeRed";    
 // Thick X 2 - making decorations thicker if it is a vent to make sure they go through shell
 Dec_Thick       = Vent ? Thick*2 : Thick; 
@@ -102,15 +106,11 @@ Dec_Thick       = Vent ? Thick*2 : Thick;
 Dec_size        = Vent ? Thick*2 : 0.8;
 
 //////////////////// Oversize PCB limitation -Actually disabled - ////////////////////
-//PCBL= PCBLength+PCBPosX>Length-(Thick*2+7) ? Length-(Thick*3+20+PCBPosX) : PCBLength;
-//PCBW= PCBWidth+PCBPosY>Width-(Thick*2+10) ? Width-(Thick*2+12+PCBPosY) : PCBWidth;
 PCBL=PCBLength;
 PCBW=PCBWidth;
-//echo (" PCBWidth = ",PCBW);
 
 
-
-/////////// - Boitier générique bord arrondis - Generic Fileted box - //////////
+/////////// - Generic Fileted box - //////////
 
 module RoundBox($a=Length, $b=Width, $c=Height){// Cube bords arrondis
                     $fn=Resolution;            
@@ -125,9 +125,9 @@ module RoundBox($a=Length, $b=Width, $c=Height){// Cube bords arrondis
                 }// End of RoundBox Module
 
       
-////////////////////////////////// - Module Coque/Shell - //////////////////////////////////         
+////////////////////////////////// - Module Shell - //////////////////////////////////         
 
-module Coque(){//Coque - Shell  
+module Coque(){// Shell  
     Thick = Thick*2;  
     difference(){    
         difference(){//sides decoration
@@ -246,7 +246,7 @@ module Coque(){//Coque - Shell
 
 ///////////////////////////////// - Module Front/Back Panels - //////////////////////////
                             
-module Panels(){//Panels
+module Panels(){// Panels
     color(Couleur2){
         translate([Thick+m,m/2,m/2]){
              difference(){
@@ -258,34 +258,51 @@ module Panels(){//Panels
                 }
          }
 }
-
   
-module Feet(){     
-//////////////////// - PCB only visible in the preview mode - /////////////////////    
-translate([brd_loc[0], brd_loc[1], brd_loc[2]])
-    rotate([0,0,270]) standoffs(boardType=UNO, height=10, mountType=TAPHOLE);
-} // Fin du module Feet
- 
+module Oled() {
+    //////////////////// - OLED - /////////////////////   
+
+    // Align the glass side of the PCB under the XY plane (align=1)
+    %DisplayModule(type=I2C4, align=1, G_COLORS=true);
+    
+    // Localize a cutout volume over the view area
+    DisplayLocalize(type=I2C4, align=0, dalign=1)
+        translate([0,0,6.0/2])
+            #cube([I2C4_LVW,I2C4_LVL,6.0], center=true);
+    // ... another one over the module glass...
+    DisplayLocalize(type=I2C4, align=1, dalign=2)
+        translate([0,0,(I2C4_LH+0.2)/2])
+            #cube([I2C4_LGW+0.2, I2C4_LGL+0.2, I2C4_LH+0.2], center=true);
+    // ... and the last one to cutout a volume for the OLED's internal flat cable
+    DisplayLocalize(type=I2C4, align=4, dalign=1)
+        translate([0,0,OLED[I2C4][0][2]/2])
+            #cube([I2C4_PCW,I2C4_PL-I2C4_LGL-I2C4_LGLO,I2C4_LH], center=true);
+}
 
 ///////////////////////////////////// - Main - ///////////////////////////////////////
 
-
-if(BPanel==1)
 //Back Panel
+if(BPanel==1)
 translate ([-m/2,0,0]){
-Panels();
+    Panels();
 }
 
-if(FPanel==1)
 //Front Panel
-rotate([0,0,180]){
-    translate([-Length-m/2,-Width,0]){             
-     Panels();
-       }
-   }
+if(FPanel==1)
+difference() {
+    rotate([0,0,180]){
+        translate([-Length-m/2,-Width,0]){
+            Panels();
+        }
+    }
+    // OLED
+    translate([OledPosX, OledPosY, OledPosZ])
+        rotate([90,0,90])
+            Oled();       
+}
 
-if(Text==1)
 // Front text
+if(Text==1)
 color(Couleur1){     
      translate([Length-(Thick),Thick*4,(Height-(Thick*4+(TxtSize/2)))]){// x,y,z
           rotate([90,0,90]){
@@ -296,16 +313,14 @@ color(Couleur1){
          }
 }
 
-
+// Bottom shell
 if(BShell==1)
-// Coque bas - Bottom shell
 color(Couleur1){ 
 Coque();
 }
 
-
+// Top Shell
 if(TShell==1)
-// Coque haut - Top Shell
 color( Couleur1,1){
     translate([0,Width,Height+0.2]){
         rotate([0,180,180]){
@@ -314,26 +329,21 @@ color( Couleur1,1){
         }
 }
 
-if (PCBFeet==1)
-// Feet
-Feet();
-
- 
- if (Components==1)
-
-// Components
-
+// Nano
 translate([5, 6, Thick/2]) {
     %nano();
     nano_mount();
     }
- 
+    
+ // HX711
  translate([5, 36, Thick/2]) {
     %hx711();
     hx711_mount();
     }
     
+// Battery
 translate([56, 6, Thick/2])
     rotate([90,270,180]) %9V();
- 
- 
+
+
+
