@@ -67,7 +67,7 @@ module RoundBox($a=Length, $b=Width, $c=Height){
       } 
     }
   }
-                }// End of RoundBox Module
+}// End of RoundBox Module
       
 ////////////////////////////////// - Module Shell - //////////////////////////////////         
 module Shell(){// Shell  
@@ -129,29 +129,29 @@ module Shell(){// Shell
             cube([Length,Thick*2,10]);
           }
         } //End fixation box legs
-            }
+      }
 
-        union(){// outbox sides decorations
-          //if(Thick==1){Thick=2;
-          for(i=[0:Thick:Length/4]){
+      union(){// outbox sides decorations
+        //if(Thick==1){Thick=2;
+        for(i=[0:Thick:Length/4]){
 
-            // Ventilation holes part code submitted by Ettie - Thanks ;) 
-            translate([10+i,-Dec_Thick+Dec_size,1]){
-              cube([Vent_width,Dec_Thick,Height/4]);
-            }
-            translate([(Length-10) - i,-Dec_Thick+Dec_size,1]){
-              cube([Vent_width,Dec_Thick,Height/4]);
-            }
-            translate([(Length-10) - i,Width-Dec_size,1]){
-              cube([Vent_width,Dec_Thick,Height/4]);
-            }
-            translate([10+i,Width-Dec_size,1]){
-              cube([Vent_width,Dec_Thick,Height/4]);
-            }
+          // Ventilation holes part code submitted by Ettie - Thanks ;) 
+          translate([10+i,-Dec_Thick+Dec_size,1]){
+            cube([Vent_width,Dec_Thick,Height/4]);
+          }
+          translate([(Length-10) - i,-Dec_Thick+Dec_size,1]){
+            cube([Vent_width,Dec_Thick,Height/4]);
+          }
+          translate([(Length-10) - i,Width-Dec_size,1]){
+            cube([Vent_width,Dec_Thick,Height/4]);
+          }
+          translate([10+i,Width-Dec_size,1]){
+            cube([Vent_width,Dec_Thick,Height/4]);
+          }
                   
-          }// End for
+        }// End for
                // }
-        }//End union decoration
+      }//End union decoration
     }//End difference decoration
 
     union(){ //sides holes
