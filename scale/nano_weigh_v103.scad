@@ -14,10 +14,11 @@ use <Batteries_in_OpenSCAD/batteries.scad>
 include <OpenSCAD_Libs/models/096OledDim.scad>;
 use <OpenSCAD_Libs/models/096Oled.scad>;
 use <OpenSCAD_Libs/oled_096.scad>
+use <9V_Batter_Holder/9V_Batt.scad>
 
 /* [Box dimensions] */
-Length        = 100; // Length 
-Width         = 64;  // Width
+Length        = 110; // Length 
+Width         = 70;  // Width
 Height        = 42;  // Height  
 Thick         = 3;   // Wall thickness [2:5]  
   
@@ -34,7 +35,7 @@ m             = 0.9; // Tolerance (Panel/rails gap)
 /* [PCB options] */
 PCBPosX = 9;
 PCBPosY = 8;
-PCBDist =  26;
+PCBDist =  32;
 
 /* [Display options] */
 OledPosX = Length-7;
@@ -44,7 +45,7 @@ OledPosZ = Height/2;
 /* [STL element to export] */
 TShell        = 0;   // Top shell [0:No, 1:Yes]
 BShell        = 1;   // Bottom shell [0:No, 1:Yes]
-BPanel        = 1;   // Back panel [0:No, 1:Yes]
+BPanel        = 0;   // Back panel [0:No, 1:Yes]
 FPanel        = 1;   // Front panel [0:No, 1:Yes]
 Text          = 0;   // Front text [0:No, 1:Yes]
 Components    = 1;   // Arduino parts [0:No, 1:Yes]
@@ -269,8 +270,12 @@ if(Components==1){
     }
 
 	// Battery
-	translate([56, 6, Thick/2])
-	rotate([90,270,180]) %9V();
+	translate([87, 6, Thick])
+        rotate([90,0,180]) %9V();
+    
+    // Battery holder
+	translate([76, 30, 9])
+        rotate([0,0,270]) #bh();
     
     // OLED
     translate([OledPosX, OledPosY, OledPosZ])
