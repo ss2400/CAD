@@ -8,13 +8,14 @@
 //   CoordA           --->       CoordB
 ////////////////////////////////////////////////////////////////////
 
+include <BOSL/shapes.scad>
+include <NopSCADLib/utils/rounded_cylinder.scad>
 use <OpenSCAD_Libs/nano.scad>
 use <OpenSCAD_Libs/hx711.scad>
 use <OpenSCAD_Libs/models/batteries.scad>
 include <OpenSCAD_Libs/models/096OledDim.scad>;
 use <OpenSCAD_Libs/models/096Oled.scad>;
 use <OpenSCAD_Libs/oled_096.scad>
-use <9V_Batter_Holder/9V_Batt.scad>
 
 $fn = 40;
 
@@ -45,13 +46,13 @@ OledPosY = Width/2;
 OledPosZ = Height/2;
 
 /* Battery dimensions */
-BattPosX = 30;
+BattPosX = 38;
 BattPosY = 42;
 BattPosZ = Thick-0.1;
-BattLength = 50;
+BattLength = 60;
 BattWidth  = 17;
 BattHeight = 30;
-BattThick  = 2;
+BattThick  = 6;
 BattFit = 2;
 
 /* Switch dimensions */
@@ -60,19 +61,20 @@ SwPosY = Width*0.2;
 SwPosZ = Height*0.62;
 
 /* Connector dimensions */
-ConnPosX = Thick; // Backside of face (and a touch back)
+ConnPosX = Thick*1.5+m/2; // Backside of face (and a touch back)
 ConnPosY = Width*0.7;
 ConnPosZ = Height*0.5;
 ConnDia = 17;
 
 /* [STL element to export] */
-TShell        = 1;   // Top shell [0:No, 1:Yes]
+TShell        = 0;   // Top shell [0:No, 1:Yes]
 BShell        = 1;   // Bottom shell [0:No, 1:Yes]
 BPanel        = 1;   // Back panel [0:No, 1:Yes]
 FPanel        = 1;   // Front panel [0:No, 1:Yes]
 Text          = 0;   // Front text [0:No, 1:Yes]
 Components    = 1;   // Arduino parts [0:No, 1:Yes]
-  
+alpha         = 0.9;
+
 /* [Hidden] */
 Color1    = "Orange";    // Shell color  
 Color2    = "OrangeRed"; // Panels color    
@@ -221,14 +223,22 @@ module Panels(){// Panels
 ///////////////////////////////// - Module Battery Box - //////////////////////////
 module BattBox(){
   color(Color2){
-    translate([0, 0, 0])
-      cube([BattLength, BattThick, BattHeight+Thick]);
+
+    translate([0, BattWidth*0.5+BattThick, -1])
+      cyl(d=BattThick, h=BattHeight+Thick, fillet=1, center=false);
       
-    translate([BattLength+6, BattWidth/2+BattThick+BattFit, 0])
-      cylinder(d=Thick*2, h=BattHeight+Thick, center=false);
-      
-    //translate([BattWidth+BattThick+2*BattFit, 0, 0])
-      //cube([BattLength, BattThick, BattHeight]);
+    hull(){
+      translate([BattLength*0.25, 0, -1])
+        cyl(d=BattThick, h=BattHeight+Thick, fillet=1, center=false);
+
+      //translate([BattLength*0.5, 0, -1])
+      //  cyl(d=BattThick, h=BattHeight+Thick, fillet=1, center=false);
+
+      translate([BattLength*0.75, 0, -1])
+        cyl(d=BattThick, h=BattHeight+Thick, fillet=1, center=false);
+    }
+    translate([BattLength, BattWidth*0.5+BattThick, -1])
+      cyl(d=BattThick, h=BattHeight+Thick, fillet=1, center=false);
   }
 }
 
@@ -243,7 +253,7 @@ if(BPanel==1) {
     // Connector cutout
     translate([ConnPosX, ConnPosY, ConnPosZ])
       rotate([90,0,90])
-        #cylinder(d=ConnDia, h=Thick*2);
+        cylinder(d=ConnDia, h=Thick*2, center=true);
 
   }
 }
@@ -293,19 +303,19 @@ color(Color1){
 
 // Bottom shell
 if(BShell==1)
-  color(Color1){ 
+  color(Color1, alpha){ 
     Shell();
   }
 
 // Top Shell
 if(TShell==1)
-  //color(Color1,1){
+  color(Color1, alpha){
     translate([0,Width,Height+0.2]){
       rotate([0,180,180]){
-        %Shell();
+        Shell();
       }
     }
-  //}
+  }
 
 if(Components==1){
 	// Nano Mount
@@ -323,11 +333,11 @@ if(Components==1){
 	// Battery Box
   translate([BattPosX, BattPosY, BattPosZ]) {
     BattBox();
-      translate([0,BattFit+BattThick,BattHeight])
+      translate([BattThick,BattThick/2+BattFit,BattHeight])
         rotate([0,90,0])
           %9V();
     }
-  
+
   // OLED Display
   translate([OledPosX, OledPosY, OledPosZ])
     rotate([90,0,90])
