@@ -10,45 +10,68 @@
 
 use <OpenSCAD_Libs/nano.scad>
 use <OpenSCAD_Libs/hx711.scad>
-use <Batteries_in_OpenSCAD/batteries.scad>
+use <OpenSCAD_Libs/models/batteries.scad>
 include <OpenSCAD_Libs/models/096OledDim.scad>;
 use <OpenSCAD_Libs/models/096Oled.scad>;
 use <OpenSCAD_Libs/oled_096.scad>
 use <9V_Batter_Holder/9V_Batt.scad>
 
-/* [Box dimensions] */
+$fn = 40;
+
+/* Box dimensions */
 Length        = 110; // Length 
 Width         = 70;  // Width
 Height        = 42;  // Height  
 Thick         = 3;   // Wall thickness [2:5]  
   
-/* [Box options] */
+/* Box options */
 Vent          = 0;   // Decorations to ventilation holes [0:No, 1:Yes]
 Vent_width    = 1.5; // Holes width (in mm)  
 txt           = "HeartyGFX"; // Text you want
 TxtSize       = 3;   // Font size  
 Police        = "Arial Black"; // Font
-Filet         = 2;   // Filet diameter [0.1:12] 
-Resolution    = 50;  // Filet smoothness [1:100] 
+Filet         = 2;   // Fillet diameter [0.1:12] 
+Resolution    = 50;  // Fillet smoothness [1:100] 
 m             = 0.9; // Tolerance (Panel/rails gap)
 
-/* [PCB options] */
+/* PCB dimensions */
 PCBPosX = 9;
 PCBPosY = 8;
-PCBDist =  32;
+PCBDist =  48;
 
-/* [Display options] */
+/* Display dimensions */
 OledPosX = Length-7;
 OledPosY = Width/2;
 OledPosZ = Height/2;
 
+/* Battery dimensions */
+BattPosX = 30;
+BattPosY = 42;
+BattPosZ = Thick-0.1;
+BattLength = 50;
+BattWidth  = 17;
+BattHeight = 30;
+BattThick  = 2;
+BattFit = 2;
+
+/* Switch dimensions */
+SwPosX = Length-Thick*2-m/2-0.1; // Backside of face (and a touch back)
+SwPosY = Width*0.2;
+SwPosZ = Height*0.62;
+
+/* Connector dimensions */
+ConnPosX = Thick; // Backside of face (and a touch back)
+ConnPosY = Width*0.7;
+ConnPosZ = Height*0.5;
+ConnDia = 17;
+
 /* [STL element to export] */
-TShell        = 0;   // Top shell [0:No, 1:Yes]
-BShell        = 0;   // Bottom shell [0:No, 1:Yes]
-BPanel        = 0;   // Back panel [0:No, 1:Yes]
+TShell        = 1;   // Top shell [0:No, 1:Yes]
+BShell        = 1;   // Bottom shell [0:No, 1:Yes]
+BPanel        = 1;   // Back panel [0:No, 1:Yes]
 FPanel        = 1;   // Front panel [0:No, 1:Yes]
 Text          = 0;   // Front text [0:No, 1:Yes]
-Components    = 0;   // Arduino parts [0:No, 1:Yes]
+Components    = 1;   // Arduino parts [0:No, 1:Yes]
   
 /* [Hidden] */
 Color1    = "Orange";    // Shell color  
@@ -56,7 +79,7 @@ Color2    = "OrangeRed"; // Panels color
 Dec_Thick = Vent ? Thick*2 : Thick; // Thick X 2 - make sure they go through shell
 Dec_size  = Vent ? Thick*2 : 0.8; // Depth decoration
 
-/////////// - Generic Fileted box - //////////
+/////////// - Generic Filleted box - //////////
 module RoundBox($a=Length, $b=Width, $c=Height){
   $fn=Resolution;            
   translate([0,Filet,Filet]){  
@@ -75,7 +98,7 @@ module Shell(){// Shell
   difference(){    
     difference(){//sides decoration
       union(){    
-        difference() {// Substraction Fileted box
+        difference() {// Subtraction Filleted box
     
           difference(){// Median cube slicer
             union() {// Union               
@@ -89,12 +112,12 @@ module Shell(){// Shell
                 translate([Thick+m,Thick/2,Thick/2]){// Rails
                   RoundBox($a=Length-((2*Thick)+(2*m)), $b=Width-Thick, $c=Height-(Thick*2));
                 }//End Rails
-                translate([((Thick+m/2)*1.55),Thick/2,Thick/2+0.1]){ // +0.1 added to avoid the artefact
+                translate([((Thick+m/2)*1.55),Thick/2,Thick/2+0.1]){ // +0.1 added to avoid the artifact
                   RoundBox($a=Length-((Thick*3)+2*m), $b=Width-Thick, $c=Height-Thick);
                 }           
               }//End larger Rails
             }//End union                 
-            translate([-Thick,-Thick,Height/2]){// Cube à soustraire
+            translate([-Thick,-Thick,Height/2]){
               cube ([Length+100, Width+100, Height], center=false);
             }        
           }// End Median cube slicer
@@ -195,13 +218,34 @@ module Panels(){// Panels
   }
 }
 
+///////////////////////////////// - Module Battery Box - //////////////////////////
+module BattBox(){
+  color(Color2){
+    translate([0, 0, 0])
+      cube([BattLength, BattThick, BattHeight+Thick]);
+      
+    translate([BattLength+6, BattWidth/2+BattThick+BattFit, 0])
+      cylinder(d=Thick*2, h=BattHeight+Thick, center=false);
+      
+    //translate([BattWidth+BattThick+2*BattFit, 0, 0])
+      //cube([BattLength, BattThick, BattHeight]);
+  }
+}
 
 ///////////////////////////////////// - Main - ///////////////////////////////////////
 
 //Back Panel
-if(BPanel==1)
-  translate ([-m/2,0,0]){
-    Panels();
+if(BPanel==1) {
+  difference() {
+    translate ([-m/2,0,0])
+      Panels();
+      
+    // Connector cutout
+    translate([ConnPosX, ConnPosY, ConnPosZ])
+      rotate([90,0,90])
+        #cylinder(d=ConnDia, h=Thick*2);
+
+  }
 }
 
 //Front Panel
@@ -216,7 +260,17 @@ if(FPanel==1) {
     translate([OledPosX, OledPosY, OledPosZ])
       rotate([90,0,90])
         oled_cutout();
+        
+    // Switch cutout
+    translate([SwPosX, SwPosY, SwPosZ])
+      rotate([90,0,90])
+        cylinder(d=6.5, h=Thick*2);
+    // Switch key
+    translate([SwPosX, SwPosY, SwPosZ+6.5])
+      rotate([90,0,90])
+        cylinder(d=2.5, h=2);          
   }
+  
   color(Color2) {
     // OLED posts
     translate([OledPosX, OledPosY, OledPosZ])
@@ -245,37 +299,39 @@ if(BShell==1)
 
 // Top Shell
 if(TShell==1)
-  color(Color1,1){
+  //color(Color1,1){
     translate([0,Width,Height+0.2]){
       rotate([0,180,180]){
-        Shell();
+        %Shell();
       }
     }
-  }
+  //}
 
 if(Components==1){
-	// Nano
+	// Nano Mount
 	translate([PCBPosX, PCBPosY, Thick/2]) {
-		%nano(h=6);
-		nano_mount(h=6);
+		%nano(h=9);
+		nano_mount(h=9);
   }
 
-	// HX711
-	translate([PCBPosX, PCBPosY+PCBDist, Thick/2]) {
-		%hx711(h=6);
-		hx711_mount(h=6);
-  }
+	// HX711 Mount
+  translate([PCBPosX+PCBDist, PCBPosY, Thick/2]) {
+    %hx711(h=14);
+    hx711_mount(h=14);
+   }
 
-	// Battery
-	translate([87, 6, Thick])
-    rotate([90,0,180]) %9V();
-    
-  // Battery holder
-	translate([76, 30, 9])
-    rotate([0,0,270]) #bh();
-    
-  // OLED
+	// Battery Box
+  translate([BattPosX, BattPosY, BattPosZ]) {
+    BattBox();
+      translate([0,BattFit+BattThick,BattHeight])
+        rotate([0,90,0])
+          %9V();
+    }
+  
+  // OLED Display
   translate([OledPosX, OledPosY, OledPosZ])
     rotate([90,0,90])
-      DisplayModule(type=I2C4, align=1, G_COLORS=true);
+      %DisplayModule(type=I2C4, align=1, G_COLORS=true);
+      
+
 }
