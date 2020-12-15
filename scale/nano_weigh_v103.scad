@@ -59,18 +59,20 @@ BattFit = 2;
 SwPosX = Length-Thick*2-m/2-0.1; // Backside of face (and a touch back)
 SwPosY = Width*0.2;
 SwPosZ = Height*0.62;
+SwDia = 6.5;
 
 /* Connector dimensions */
 ConnPosX = Thick*1.5+m/2; // Backside of face (and a touch back)
 ConnPosY = Width*0.7;
 ConnPosZ = Height*0.5;
-ConnDia = 17;
+ConnDia = 15.8;
+ConnFlat = 14.8;
 
 /* [STL element to export] */
 TShell        = 0;   // Top shell [0:No, 1:Yes]
 BShell        = 1;   // Bottom shell [0:No, 1:Yes]
-BPanel        = 1;   // Back panel [0:No, 1:Yes]
-FPanel        = 1;   // Front panel [0:No, 1:Yes]
+BPanel        = 0;   // Back panel [0:No, 1:Yes]
+FPanel        = 0;   // Front panel [0:No, 1:Yes]
 Text          = 0;   // Front text [0:No, 1:Yes]
 Components    = 1;   // Arduino parts [0:No, 1:Yes]
 alpha         = 0.9;
@@ -253,8 +255,10 @@ if(BPanel==1) {
     // Connector cutout
     translate([ConnPosX, ConnPosY, ConnPosZ])
       rotate([90,0,90])
-        cylinder(d=ConnDia, h=Thick*2, center=true);
-
+        intersection() {
+          cylinder(d=ConnDia, h=Thick*2, center=true);
+          cube([ConnFlat, ConnDia, Thick*2], center=true);
+        }
   }
 }
 
@@ -274,7 +278,7 @@ if(FPanel==1) {
     // Switch cutout
     translate([SwPosX, SwPosY, SwPosZ])
       rotate([90,0,90])
-        cylinder(d=6.5, h=Thick*2);
+        cylinder(d=SwDia, h=Thick*2);
     // Switch key
     translate([SwPosX, SwPosY, SwPosZ+6.5])
       rotate([90,0,90])
