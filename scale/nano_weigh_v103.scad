@@ -35,10 +35,14 @@ Filet         = 2;   // Fillet diameter [0.1:12]
 Resolution    = 50;  // Fillet smoothness [1:100] 
 m             = 0.9; // Tolerance (Panel/rails gap)
 
-/* PCB dimensions */
-PCBPosX = 9;
-PCBPosY = 8;
-PCBDist =  46;
+/* PCB position */
+NanoPosX = 10;
+NanoPosY = 10;
+NanoPosZ = 6;
+
+HX711PosX = 60;
+HX711PosY = 10;
+HX711PosZ = 6;
 
 /* Display dimensions */
 OledPosX = Length-7;
@@ -75,7 +79,7 @@ BPanel        = 1;   // Back panel [0:No, 1:Yes]
 FPanel        = 1;   // Front panel [0:No, 1:Yes]
 Text          = 0;   // Front text [0:No, 1:Yes]
 Components    = 1;   // Arduino parts [0:No, 1:Yes]
-alpha         = 0.9;
+alpha         = 0.7;
 
 /* [Hidden] */
 Color1    = "Orange";    // Shell color  
@@ -226,21 +230,21 @@ module Panels(){// Panels
 module BattBox(){
   color(Color2){
 
-    translate([0, BattWidth*0.5+BattThick, -1])
-      cyl(d=BattThick, h=BattHeight+Thick, fillet=1, center=false);
+    translate([0, BattWidth*0.5+BattThick, Thick-0.01])
+      cyl(d=BattThick, h=BattHeight, fillet=1, center=false);
       
     hull(){
-      translate([BattLength*0.25, 0, -1])
-        cyl(d=BattThick, h=BattHeight+Thick, fillet=1, center=false);
+      translate([BattLength*0.25, 0, Thick-0.01])
+        cyl(d=BattThick, h=BattHeight, fillet=1, center=false);
 
       //translate([BattLength*0.5, 0, -1])
       //  cyl(d=BattThick, h=BattHeight+Thick, fillet=1, center=false);
 
-      translate([BattLength*0.75, 0, -1])
-        cyl(d=BattThick, h=BattHeight+Thick, fillet=1, center=false);
+      translate([BattLength*0.75, 0, Thick-0.01])
+        cyl(d=BattThick, h=BattHeight, fillet=1, center=false);
     }
-    translate([BattLength, BattWidth*0.5+BattThick, -1])
-      cyl(d=BattThick, h=BattHeight+Thick, fillet=1, center=false);
+    translate([BattLength, BattWidth*0.5+BattThick, Thick-0.01])
+      cyl(d=BattThick, h=BattHeight, fillet=1, center=false);
   }
 }
 
@@ -323,15 +327,15 @@ if(TShell==1)
 
 if(Components==1){
 	// Nano Mount
-	translate([PCBPosX, PCBPosY, Thick/2]) {
-		%nano(h=9);
-		nano_mount(h=9);
+	translate([NanoPosX, NanoPosY, Thick-0.01]) {
+		%nano(h=NanoPosZ);
+		nano_mount(h=NanoPosZ);
   }
 
 	// HX711 Mount
-  translate([PCBPosX+PCBDist, PCBPosY, Thick/2]) {
-    %hx711(h=14);
-    hx711_mount(h=14);
+  translate([HX711PosX, HX711PosY, Thick-0.01]) {
+    %hx711(h=HX711PosZ);
+    hx711_mount(h=HX711PosZ);
    }
 
 	// Battery Box
