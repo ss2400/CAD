@@ -8,16 +8,17 @@
 //   CoordA           --->       CoordB
 ////////////////////////////////////////////////////////////////////
 
-include <BOSL/shapes.scad>
-include <NopSCADLib/utils/rounded_cylinder.scad>
-use <OpenSCAD_Libs/nano.scad>
-use <OpenSCAD_Libs/hx711.scad>
-use <OpenSCAD_Libs/models/batteries.scad>
+include <NopSCADlib/lib.scad>
+
 include <OpenSCAD_Libs/models/096OledDim.scad>;
 use <OpenSCAD_Libs/models/096Oled.scad>;
-use <OpenSCAD_Libs/oled_096.scad>
+use <OpenSCAD_Libs/096_oled_mnt.scad>
 
-$fn = 40;
+use <OpenSCAD_Libs/nano_mnt.scad>
+use <OpenSCAD_Libs/hx711_mnt.scad>
+use <OpenSCAD_Libs/models/batteries.scad>
+
+$fn = 100;
 
 /* Box dimensions */
 Length        = 110; // Length 
@@ -79,7 +80,7 @@ BPanel        = 1;   // Back panel [0:No, 1:Yes]
 FPanel        = 1;   // Front panel [0:No, 1:Yes]
 Text          = 0;   // Front text [0:No, 1:Yes]
 Components    = 1;   // Arduino parts [0:No, 1:Yes]
-alpha         = 0.7;
+alpha         = 1.0;
 
 /* [Hidden] */
 Color1    = "Orange";    // Shell color  
@@ -231,20 +232,17 @@ module BattBox(){
   color(Color2){
 
     translate([0, BattWidth*0.5+BattThick, Thick-0.01])
-      cyl(d=BattThick, h=BattHeight, fillet=1, center=false);
+      rounded_cylinder(BattThick/2, BattHeight, 1, 0, 360);
       
     hull(){
       translate([BattLength*0.25, 0, Thick-0.01])
-        cyl(d=BattThick, h=BattHeight, fillet=1, center=false);
-
-      //translate([BattLength*0.5, 0, -1])
-      //  cyl(d=BattThick, h=BattHeight+Thick, fillet=1, center=false);
-
+        rounded_cylinder(BattThick/2, BattHeight, 1, 0, 360);
+        
       translate([BattLength*0.75, 0, Thick-0.01])
-        cyl(d=BattThick, h=BattHeight, fillet=1, center=false);
+        rounded_cylinder(BattThick/2, BattHeight, 1, 0, 360);
     }
     translate([BattLength, BattWidth*0.5+BattThick, Thick-0.01])
-      cyl(d=BattThick, h=BattHeight, fillet=1, center=false);
+      rounded_cylinder(BattThick/2, BattHeight, 1, 0, 360);
   }
 }
 
@@ -286,11 +284,15 @@ if(FPanel==1) {
     // Switch key
     translate([SwPosX, SwPosY, SwPosZ+6.5])
       rotate([90,0,90])
-        cylinder(d=2.5, h=2);          
+        cylinder(d=2.5, h=2);
   }
+  // Toggle switch
+  translate([SwPosX, SwPosY,SwPosZ])
+    rotate([90,0,90])
+      toggle(CK7101,Thick);
   
+  // OLED posts    
   color(Color2) {
-    // OLED posts
     translate([OledPosX, OledPosY, OledPosZ])
       rotate([90,0,90])
         oled_posts();
