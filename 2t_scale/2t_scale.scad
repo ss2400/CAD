@@ -13,7 +13,6 @@ include <NopSCADlib/lib.scad>
 include <OpenSCAD_Libs/models/096OledDim.scad>;
 use <OpenSCAD_Libs/models/096Oled.scad>;
 use <OpenSCAD_Libs/096_oled_mnt.scad>
-
 use <OpenSCAD_Libs/nano_mnt.scad>
 use <OpenSCAD_Libs/hx711_mnt.scad>
 use <OpenSCAD_Libs/models/batteries.scad>
@@ -36,14 +35,17 @@ Filet         = 2;   // Fillet diameter [0.1:12]
 Resolution    = 50;  // Fillet smoothness [1:100] 
 m             = 0.9; // Tolerance (Panel/rails gap)
 
-/* PCB position */
+/* Arduino dimensions */
 NanoPosX = 10;
 NanoPosY = 10;
-NanoPosZ = 6;
+NanoPosZ = Thick-0.01;
+NanoHeight = 6;
 
+/* Amplifier dimensions */
 HX711PosX = 60;
 HX711PosY = 10;
-HX711PosZ = 6;
+HX711PosZ = Thick-0.01;
+HX711Height = 6;
 
 /* Display dimensions */
 OledPosX = Length-7;
@@ -53,12 +55,12 @@ OledPosZ = Height/2;
 /* Battery dimensions */
 BattPosX = 38;
 BattPosY = 42;
-BattPosZ = Thick-0.1;
+BattPosZ = Thick-0.01;
 BattLength = 60;
 BattWidth  = 17;
 BattHeight = 30;
-BattThick  = 6;
-BattFit = 2;
+BattPost = 6;
+BattSlop = 2;
 
 /* Switch dimensions */
 SwPosX = Length-Thick*2-m/2-0.1; // Backside of face (and a touch back)
@@ -76,8 +78,8 @@ ConnFlat = 14.8;
 /* [STL element to export] */
 TShell        = 0;   // Top shell [0:No, 1:Yes]
 BShell        = 1;   // Bottom shell [0:No, 1:Yes]
-BPanel        = 0;   // Back panel [0:No, 1:Yes]
-FPanel        = 0;   // Front panel [0:No, 1:Yes]
+BPanel        = 1;   // Back panel [0:No, 1:Yes]
+FPanel        = 1;   // Front panel [0:No, 1:Yes]
 Text          = 0;   // Front text [0:No, 1:Yes]
 Components    = 1;   // Arduino parts [0:No, 1:Yes]
 alpha         = 1.0;
@@ -231,18 +233,17 @@ module Panels(){// Panels
 module BattBox(){
   color(Color2){
 
-    translate([0, BattWidth*0.5+BattThick, Thick-0.01])
-      rounded_cylinder(BattThick/2, BattHeight, 1, 0, 360);
-      
+    translate([0, BattWidth*0.5+BattPost, 0])
+      rounded_cylinder(r=BattPost/2, h=BattHeight, r2=1, ir=0, angle=360);
     hull(){
-      translate([BattLength*0.25, 0, Thick-0.01])
-        rounded_cylinder(BattThick/2, BattHeight, 1, 0, 360);
+      translate([BattLength*0.25, 0, 0])
+        rounded_cylinder(r=BattPost/2, h=BattHeight, r2=1, ir=0, angle=360);
         
-      translate([BattLength*0.75, 0, Thick-0.01])
-        rounded_cylinder(BattThick/2, BattHeight, 1, 0, 360);
+      translate([BattLength*0.75, 0, 0])
+        rounded_cylinder(r=BattPost/2, h=BattHeight, r2=1, ir=0, angle=360);
     }
-    translate([BattLength, BattWidth*0.5+BattThick, Thick-0.01])
-      rounded_cylinder(BattThick/2, BattHeight, 1, 0, 360);
+    translate([BattLength, BattWidth*0.5+BattPost, 0])
+      rounded_cylinder(r=BattPost/2, h=BattHeight, r2=1, ir=0, angle=360);
   }
 }
 
@@ -329,21 +330,21 @@ if(TShell==1)
 
 if(Components==1){
 	// Nano Mount
-	translate([NanoPosX, NanoPosY, Thick-0.01]) {
-		%nano(h=NanoPosZ);
-		nano_mount(h=NanoPosZ);
+	translate([NanoPosX, NanoPosY, NanoPosZ]) {
+		nano_mount(h=NanoHeight);
+    %nano(h=NanoHeight);
   }
 
 	// HX711 Mount
-  translate([HX711PosX, HX711PosY, Thick-0.01]) {
-    %hx711(h=HX711PosZ);
-    hx711_mount(h=HX711PosZ);
+  translate([HX711PosX, HX711PosY, HX711PosZ]) {
+    hx711_mount(h=HX711Height);
+    %hx711(h=HX711Height);
    }
 
 	// Battery Box
   translate([BattPosX, BattPosY, BattPosZ]) {
     BattBox();
-      translate([BattThick,BattThick/2+BattFit,BattHeight])
+      translate([BattPost,BattPost/2+BattSlop,BattHeight-2])
         rotate([0,90,0])
           %9V();
     }
@@ -352,6 +353,4 @@ if(Components==1){
   translate([OledPosX, OledPosY, OledPosZ])
     rotate([90,0,90])
       %DisplayModule(type=I2C4, align=1, G_COLORS=true);
-      
-
 }
