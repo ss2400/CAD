@@ -11,7 +11,6 @@
 ////////////////////////////////////////////////////////////////////
 
 include <NopSCADlib/lib.scad>
-//use <NopSCADlib/printed/foot.scad>
 use <NopSCADlib/printed/printed_box.scad>
 
 include <OpenSCAD_Libs/models/096OledDim.scad>;
@@ -22,9 +21,9 @@ use <OpenSCAD_Libs/nano_mnt.scad>
 $fn = 100;
 
 /* Box dimensions */
-Width   = 60;  // Width
-Height  = 15;  // Height
-Depth   = 55;
+Width   = 60; // Width (X)
+Depth   = 55; // Depth (Y)
+Height  = 15; // Height (Z)
 
 m = 0.2;
 
@@ -45,19 +44,13 @@ OledPosY = 2;
 OledPosZ = base_thickness;
 
 /* Connector dimensions */
-ConnPosX = base_thickness*1.5+m/2; // Backside of face (and a touch back)
-ConnPosY = Width*0.7;
-ConnPosZ = Height*0.5;
-ConnDia = 15.8;
-ConnFlat = 14.8;
+Cable = 6.5;
 
 /* [STL element to export] */
-Shell       = 0;   // Shell [0:No, 1:Yes]
-FPanel      = 1;   // Front panel [0:No, 1:Yes]
-Components  = 0;   // Arduino parts [0:No, 1:Yes]
-
-//foot = Foot(d = 13, h = 5, t = 2, r = 1, screw = M3_pan_screw);
-//module foot_stl() foot(foot);
+Shell       = 0;    // Shell [0:No, 1:Yes]
+FPanel      = 1;    // Front panel [0:No, 1:Yes]
+Components  = 1;    // Parts
+Transparent = 1;
 
 //box1 = pbox(name = "box1", wall = wall, top_t = top_thickness, base_t = base_thickness, radius = inner_rad, size = [Width, Depth, Height], screw = M2_cap_screw, ridges = [8, 1]);
 box1 = pbox(name = "box1", wall = wall, top_t = top_thickness, base_t = base_thickness, radius = inner_rad, size = [Width, Depth, Height], screw = M2_cap_screw);
@@ -69,6 +62,10 @@ module box1_external_additions() {
 }
 
 module box1_holes() {
+  // Cable hole
+  translate([-Width*0.25, Depth*0.44, top_thickness])
+    rotate([0,0,90])
+      cylinder(d=Cable, h=top_thickness*2.5, center=true);
 }
 
 module box1_case_stl() {
@@ -85,13 +82,15 @@ module box1_base_additions() {
   translate([NanoPosX, NanoPosY, NanoPosZ])
     rotate([0,0,90]) {
       nano_mount(h=NanoHeight);
-      %nano(h=NanoHeight);
+      if(Components)
+        %nano(h=NanoHeight);
     }
 
   // OLED Display
-  translate([OledPosX, OledPosY, OledPosZ])
-    rotate([180,0,0])
-      %DisplayModule(type=I2C4, align=1, G_COLORS=true);
+  if(Components)
+    translate([OledPosX, OledPosY, OledPosZ])
+      rotate([180,0,0])
+        %DisplayModule(type=I2C4, align=1, G_COLORS=true);
 
   // OLED posts    
   color(pp1_colour) {
@@ -109,10 +108,10 @@ module box1_base_holes() {
 }
 
 module box1_base_stl()
-    pbox_base(box1) {
-        box1_base_additions();
-        box1_base_holes();
-    }
+  pbox_base(box1) {
+    box1_base_additions();
+    box1_base_holes();
+  }
 
 module box1_assembly()
   assembly("box1") {
@@ -121,18 +120,26 @@ module box1_assembly()
         render()
           box1_case_stl();
 
-      pbox_inserts(box1);
-
-      pbox_base_screws(box1);
+      if(Components) {
+        pbox_inserts(box1);
+        pbox_base_screws(box1);
+      }
     }
 
     if(FPanel) {
       translate_z(Height + top_thickness + base_thickness + eps)
         vflip()
-          render()
+          if(Transparent)
+            %box1_base_stl();
+          else
             box1_base_stl();
     }
 
   }
 
 box1_assembly();
+
+echo(pbox_insert(box1));
+echo(pbox_screw(box1));
+echo(pbox_screw_inset(box1));
+echo(pbox_screw_length(box1));
