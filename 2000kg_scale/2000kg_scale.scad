@@ -81,7 +81,7 @@ ConnFlat = 14.8;
 TShell        = 0;   // Top shell [0:No, 1:Yes]
 BShell        = 1;   // Bottom shell [0:No, 1:Yes]
 BPanel        = 0;   // Back panel [0:No, 1:Yes]
-FPanel        = 0;   // Front panel [0:No, 1:Yes]
+FPanel        = 1;   // Front panel [0:No, 1:Yes]
 Text          = 0;   // Front text [0:No, 1:Yes]
 Components    = 1;   // Arduino parts [0:No, 1:Yes]
 alpha         = 1.0;
@@ -233,8 +233,7 @@ module Panels(){// Panels
 
 ///////////////////////////////// - Module Battery Box - //////////////////////////
 module BattBox(){
-  color(Color2){
-
+  color(Color1){
     translate([0, BattWidth*0.5+BattPost, 0])
       rounded_cylinder(r=BattPost/2, h=BattHeight, r2=1, ir=0, angle=360);
     hull(){
@@ -278,7 +277,7 @@ if(FPanel==1) {
     // OLED cutout
     translate([OledPosX, OledPosY, OledPosZ])
       rotate([90,0,90])
-        oled_cutout();
+        oled_cutout(type=DORHEA);
         
     // Switch cutout
     translate([SwPosX, SwPosY, SwPosZ])
@@ -289,16 +288,12 @@ if(FPanel==1) {
       rotate([90,0,90])
         cylinder(d=2.5, h=2);
   }
-  // Toggle switch
-  translate([SwPosX, SwPosY,SwPosZ])
-    rotate([90,0,90])
-      %toggle(CK7101,Thick);
   
   // OLED posts    
   color(Color2) {
     translate([OledPosX, OledPosY, OledPosZ])
       rotate([90,0,90])
-        oled_posts();
+        oled_posts(type=DORHEA);
   }
 }
 
@@ -330,29 +325,38 @@ if(TShell==1)
     }
   }
 
-if(Components==1){
-	// Nano Mount
-	translate([NanoPosX, NanoPosY, NanoPosZ]) {
-		nano_mount(h=NanoHeight);
+// Nano Mount
+translate([NanoPosX, NanoPosY, NanoPosZ]) {
+  color(Color1) nano_mount(h=NanoHeight);
+  if(Components==1)
     %nano(h=NanoHeight);
   }
 
-	// HX711 Mount
-  translate([HX711PosX, HX711PosY, HX711PosZ]) {
-    hx711_mount(h=HX711Height);
+// HX711 Mount
+translate([HX711PosX, HX711PosY, HX711PosZ]) {
+  color(Color1) hx711_mount(h=HX711Height);
+  if(Components==1)
     %hx711(h=HX711Height);
-   }
+}
 
-	// Battery Box
-  translate([BattPosX, BattPosY, BattPosZ]) {
-    BattBox();
-      translate([BattPost,BattPost/2+BattSlop,BattHeight-2])
-        rotate([0,90,0])
-          %9V();
-    }
+// Battery Box
+translate([BattPosX, BattPosY, BattPosZ]) {
+  BattBox();
+  if(Components==1)
+    translate([BattPost,BattPost/2+BattSlop,BattHeight-2])
+      rotate([0,90,0])
+        %9V();
+}
 
-  // OLED Display
+// OLED Display
+if(Components==1)
   translate([OledPosX, OledPosY, OledPosZ])
     rotate([90,0,90])
-      %DisplayModule(type=I2C4, align=1, G_COLORS=true);
-}
+      %DisplayModule(type=DORHEA, align=1, G_COLORS=true);
+
+    
+  // Toggle switch
+if(Components==1)
+  translate([SwPosX, SwPosY,SwPosZ])
+    rotate([90,0,90])
+      %toggle(CK7101,Thick);
