@@ -10,6 +10,10 @@
 //   CoordA           --->       CoordB
 ////////////////////////////////////////////////////////////////////
 
+$fn = 100;
+$pp1_colour = "DimGray";
+$pp2_colour = "SlateGray";
+
 include <NopSCADlib/lib.scad>
 use <NopSCADlib/printed/printed_box.scad>
 
@@ -17,8 +21,6 @@ include <OpenSCAD_Libs/models/096OledDim.scad>;
 use <OpenSCAD_Libs/models/096Oled.scad>;
 use <OpenSCAD_Libs/096_oled_mnt.scad>
 use <OpenSCAD_Libs/nano_mnt.scad>
-
-$fn = 100;
 
 /* Box dimensions */
 Width   = 60; // Width (X)
@@ -39,6 +41,7 @@ NanoPosZ = base_thickness-0.01;
 NanoHeight = 6;
 
 /* Display dimensions */
+OledType = DORHEA;
 OledPosX = -12;
 OledPosY = 2;
 OledPosZ = base_thickness;
@@ -47,10 +50,9 @@ OledPosZ = base_thickness;
 Cable = 6.5;
 
 /* [STL element to export] */
-Shell       = 0;    // Shell [0:No, 1:Yes]
+Shell       = 1;    // Shell [0:No, 1:Yes]
 FPanel      = 1;    // Front panel [0:No, 1:Yes]
 Components  = 1;    // Parts
-Transparent = 1;
 
 //box1 = pbox(name = "box1", wall = wall, top_t = top_thickness, base_t = base_thickness, radius = inner_rad, size = [Width, Depth, Height], screw = M2_cap_screw, ridges = [8, 1]);
 box1 = pbox(name = "box1", wall = wall, top_t = top_thickness, base_t = base_thickness, radius = inner_rad, size = [Width, Depth, Height], screw = M2_cap_screw);
@@ -77,11 +79,11 @@ module box1_case_stl() {
 }
 
 module box1_base_additions() {
-
   // Nano Mount
   translate([NanoPosX, NanoPosY, NanoPosZ])
     rotate([0,0,90]) {
-      nano_mount(h=NanoHeight);
+      stl_colour(pp2_colour)
+        nano_mount(h=NanoHeight);
       if(Components)
         %nano(h=NanoHeight);
     }
@@ -90,13 +92,14 @@ module box1_base_additions() {
   if(Components)
     translate([OledPosX, OledPosY, OledPosZ])
       rotate([180,0,0])
-        %DisplayModule(type=I2C4, align=1, G_COLORS=true);
+        %DisplayModule(type=OledType, align=1, G_COLORS=true);
 
   // OLED posts    
   color(pp1_colour) {
     translate([OledPosX, OledPosY, OledPosZ])
       rotate([180,0,0])
-        oled_posts();
+        stl_colour(pp2_colour)
+          oled_posts(type=OledType);
   }
 }
 
@@ -104,7 +107,7 @@ module box1_base_holes() {
   // OLED cutout
   translate([OledPosX, OledPosY, OledPosZ])
     rotate([180,0,0])
-      oled_cutout();
+      oled_cutout(type=OledType);
 }
 
 module box1_base_stl()
@@ -121,18 +124,15 @@ module box1_assembly()
           box1_case_stl();
 
       if(Components) {
-        pbox_inserts(box1);
-        pbox_base_screws(box1);
+        %pbox_inserts(box1);
+        %pbox_base_screws(box1);
       }
     }
 
     if(FPanel) {
       translate_z(Height + top_thickness + base_thickness + eps)
         vflip()
-          if(Transparent)
-            %box1_base_stl();
-          else
-            box1_base_stl();
+          box1_base_stl();
     }
 
   }
