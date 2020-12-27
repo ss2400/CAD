@@ -1,8 +1,12 @@
 
+$pp1_colour = "BurlyWood";
+$pp2_colour = "SlateGray";
+
+include <NopSCADlib/core.scad>
 include <NopSCADlib/lib.scad>
 
-include <OpenSCAD_Libs/models/096OledDim.scad>;
-use <OpenSCAD_Libs/models/096Oled.scad>;
+include <OpenSCAD_Libs/models/096OledDim.scad>
+use <OpenSCAD_Libs/models/096Oled.scad>
 use <OpenSCAD_Libs/096_oled_mnt.scad>
 use <OpenSCAD_Libs/nano_mnt.scad>
 use <OpenSCAD_Libs/hx711_mnt.scad>
@@ -13,8 +17,8 @@ use <OpenSCAD_Libs/mbox.scad>
 Length = 110;
 Width = 70;
 Height = 42;
-Thick = 2;
-m = 0.9;
+Thick = 2.4;
+m = 0.6;
 
 /* Arduino dimensions */
 NanoPosX = 10;
@@ -29,7 +33,7 @@ HX711PosZ = Thick-0.01;
 HX711Height = 6;
 
 /* Display dimensions */
-OledPosX = Length-7;
+OledPosX = Length-Thick*2-m/2;  // Backside of face
 OledPosY = Width/2;
 OledPosZ = Height/2;
 
@@ -44,7 +48,7 @@ BattPost = 6;
 BattSlop = 2;
 
 /* Switch dimensions */
-SwPosX = Length-Thick*2-m/2-0.1; // Backside of face (and a touch back)
+SwPosX = Length-Thick*2-m/2; // Backside of face
 SwPosY = Width*0.2;
 SwPosZ = Height*0.62;
 SwDia = 6.5;
@@ -56,36 +60,40 @@ ConnPosZ = Height*0.5;
 ConnDia = 15.8;
 ConnFlat = 14.8;
 
-Color1    = "Orange";    // Shell color  
-Color2    = "OrangeRed"; // Panels color    
-
 box1 = mbox(name="box1", thick=Thick, vent=0, vent_w=1.5, filet=2, tolerance=m, size=[Length, Width, Height]);
 
-module box1_case_stl() {
+module box1_bpanel_stl() {
   mbox_bpanel(box1) {
     bpanel_internal_additions();
     bpanel_holes();
     bpanel_external_additions();
   };
-     
+}
+
+module box1_fpanel_stl() {
   mbox_fpanel(box1) {
     fpanel_internal_additions();
     fpanel_holes();
     fpanel_external_additions();
   };
+ }
  
+ module box1_bshell_stl() {
   mbox_bshell(box1) {
     bshell_internal_additions();
     bshell_holes();
     bshell_external_additions();
   };
-  
-  //mbox_tshell(box1) {
+}
+
+module box1_tshell_stl() {
+  mbox_tshell(box1) {
     //tshell_internal_additions();
     //tshell_holes();
     //tshell_external_additions();
-  //};
+  };
 }
+
 module bpanel_internal_additions() {
 }
 
@@ -104,7 +112,7 @@ module bpanel_external_additions() {
 
 module fpanel_internal_additions() {
   // OLED posts    
-  color(Color2) {
+  stl_colour(pp2_colour) {
     translate([OledPosX, OledPosY, OledPosZ])
       rotate([90,0,90])
         oled_posts(type=DORHEA);
@@ -133,13 +141,13 @@ module fpanel_external_additions() {
 module bshell_internal_additions() {
   // Nano Mount
   translate([NanoPosX, NanoPosY, NanoPosZ]) {
-    color(Color1) nano_mount(h=NanoHeight);
+    stl_colour(pp1_colour) nano_mount(h=NanoHeight);
     %nano(h=NanoHeight);
     }
 
   // HX711 Mount
   translate([HX711PosX, HX711PosY, HX711PosZ]) {
-    color(Color1) hx711_mount(h=HX711Height);
+    stl_colour(pp1_colour) hx711_mount(h=HX711Height);
     %hx711(h=HX711Height);
   }
 
@@ -157,9 +165,9 @@ module bshell_holes() {
 
 module bshell_external_additions() {
 }
-    
+
 module BattBox() {
-  color(Color1) {
+  stl_colour(pp1_colour) {
     translate([0, BattWidth*0.5+BattPost, 0])
       rounded_cylinder(r=BattPost/2, h=BattHeight, r2=1, ir=0, angle=360);
     hull() {
@@ -174,17 +182,35 @@ module BattBox() {
   }
 }
 
-// OLED Display
+module box_assembly() {
+  assembly("box1") {
+    explode(50, true) {
+      render() box1_bpanel_stl();
+      render() box1_fpanel_stl();
+      render() box1_bshell_stl();
+      render() box1_tshell_stl();
+    }
+  }
+}
 
-translate([OledPosX, OledPosY, OledPosZ])
-  rotate([90,0,90])
-    %DisplayModule(type=DORHEA, align=1, G_COLORS=true);
-
+module main_assembly() {
+  assembly("main") {
+    // OLED Display
+    translate([OledPosX, OledPosY, OledPosZ])
+      rotate([90,0,90])
+        %DisplayModule(type=DORHEA, align=1, G_COLORS=true);
     
-// Toggle switch
-translate([SwPosX, SwPosY,SwPosZ])
-  rotate([90,0,90])
-    %toggle(CK7101,Thick);
+    // Toggle switch
+    translate([SwPosX, SwPosY,SwPosZ])
+      rotate([90,0,90])
+        %toggle(CK7101,Thick);
+
+    box_assembly();
+  }
+}
+
+if($preview)
+    main_assembly();
 
 echo("Name: ",mbox_name(box1));
 echo("Thickness: ", mbox_thick(box1));
@@ -195,5 +221,3 @@ echo("Tolerance: ", mbox_tolerance(box1));
 echo("Length: ", mbox_length(box1));
 echo("Width: ", mbox_width(box1));
 echo("Height: ", mbox_height(box1));
-
-box1_case_stl();
