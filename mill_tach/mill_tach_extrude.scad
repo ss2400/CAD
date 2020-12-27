@@ -17,8 +17,8 @@ $pp2_colour = "SlateGray";
 include <NopSCADlib/lib.scad>
 use <NopSCADlib/printed/printed_box.scad>
 
-include <OpenSCAD_Libs/models/096OledDim.scad>;
-use <OpenSCAD_Libs/models/096Oled.scad>;
+include <OpenSCAD_Libs/models/096OledDim.scad>
+use <OpenSCAD_Libs/models/096Oled.scad>
 use <OpenSCAD_Libs/096_oled_mnt.scad>
 use <OpenSCAD_Libs/nano_mnt.scad>
 
@@ -95,11 +95,10 @@ module box1_base_additions() {
         %DisplayModule(type=OledType, align=1, G_COLORS=true);
 
   // OLED posts    
-  color(pp1_colour) {
+  stl_colour(pp1_colour) {
     translate([OledPosX, OledPosY, OledPosZ])
       rotate([180,0,0])
-        stl_colour(pp2_colour)
-          oled_posts(type=OledType);
+        oled_posts(type=OledType);
   }
 }
 
