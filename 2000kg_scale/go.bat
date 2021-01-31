@@ -1,9 +1,11 @@
-set OPENSCADPATH=D:\openscad-2019.05
+set OPENSCAD=openscad-2019.05
 
-set PYTHONPATH=D:\openscad-2019.05\libraries\NopSCADlib\scripts
+set OPENSCADPATH=d:\%OPENSCAD%
 
-set PATH=%PATH%;D:\openscad-2019.05\libraries\NopSCADlib\scripts;D:\openscad-2019.05
+set PYTHONPATH=%OPENSCADPATH%\libraries\NopSCADlib\scripts
 
-python ..\..\scripts\make_all.py
+set PATH=%PATH%;%OPENSCADPATH%\libraries\NopSCADlib\scripts;%OPENSCADPATH%
+
+python %PYTHONPATH%\make_all.py
 
 pause
