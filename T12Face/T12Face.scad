@@ -56,7 +56,7 @@ profile = [
 if($preview)
   translate([-42.9, 17, 5])
     rotate([180,0,0])
-      %import("M18_soldering_front_panel.STL", convexity =4);
+      %import("original/M18_soldering_front_panel.STL", convexity =4);
 
 module fpanel_internal_additions() {
 }
