@@ -6,16 +6,15 @@ $fn = 100;
 Base_Dia      = 8;
 Base_Length   = 2;
 
-Shaft_Dia     = 4;
-Shaft_Length  = 4;
+Shaft_Dia     = 4.5;
+Shaft_Length  = 4.4;
 
-Head_Dia      = 5;
-Head_Length   = 4;
+Head_Dia      = 5.4;
+Head_Length   = 3;
 
 Slot_Width    = 1;
-Slot_Height   = Base_Length + Shaft_Length/2;
+Slot_Height   = Base_Length-0.1;
 
-m = 0.2;
 difference() {
   union() {
     translate([0, 0, 0])
