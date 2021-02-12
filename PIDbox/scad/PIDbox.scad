@@ -13,8 +13,8 @@ use <NopSCADlib/printed/printed_box.scad>
 
 
 /* Box dimensions */
-Width   = 140;  // Width (X)
-Depth   = 80;   // Depth (Y)
+Width   = 145;  // Width (X)
+Depth   = 86;   // Depth (Y)
 Height  = 125;  // Height (Z)
 Ridges  = [8,1];
 
@@ -141,61 +141,59 @@ module box1_base_stl()
     box1_base_holes();
   }
 
-module box1_assembly()
-  assembly("box1") {
-    if(Shell) {
-      stl_colour(pp1_colour)
-        render()
-          box1_case_stl();
+module main_assembly()
+  assembly("main") {
+    explode(50, true) {
+      if(Shell) {
+        stl_colour(pp1_colour)
+          render()
+            box1_case_stl();
 
-      if(Components) {
-        %pbox_inserts(box1);
-        %pbox_base_screws(box1);
+        if(Components) {
+          %pbox_inserts(box1);
+          %pbox_base_screws(box1);
         
-        // SSR
-        vflip()
-          translate_z(10)
-            ssr_assembly(SSR25DA, M4_cap_screw, top_thickness);
+          // SSR
+          vflip()
+            translate_z(10)
+              ssr_assembly(SSR25DA, M4_cap_screw, top_thickness);
 
-        // Toggle switch
-        translate_z(140)
-          toggle(CK7105, base_thickness);
+          // Toggle switch
+          translate_z(140)
+            toggle(CK7105, base_thickness);
         
-        // Line power IEC connector
-        rotate(90)
-        vflip()
-          translate([0,-50,20])
-            iec_assembly(IEC_inlet);
-        // Load power connecter
+          // Line power IEC connector
+          rotate(90)
+          vflip()
+            translate([0,-50,20])
+              iec_assembly(IEC_inlet);
+          // Load power connecter
         
-        // Thermal couple connector
+          // Thermal couple connector
         
+        }
       }
-    }
     
-    box1_feet_positions() {
+      box1_feet_positions() {
         foot_assembly(0, foot);
 
-        vflip()
-            translate_z(foot_thickness(foot))
-                screw_and_washer(foot_screw(foot), 6);
-    }
+      vflip()
+        translate_z(foot_thickness(foot))
+        screw_and_washer(foot_screw(foot), 6);
+      }
         
-    if(FPanel) {
-      translate_z(Height + top_thickness + base_thickness + 2 * eps)
-        vflip()
-          %render() box1_base_stl();
-    }
+      if(FPanel) {
+        translate_z(Height + top_thickness + base_thickness + 2 * eps)
+          vflip()
+            %render() box1_base_stl();
+      }
 
+    }
   }
 
-module printed_boxes() {
-  rotate(180)
-    box1_assembly();
-}
-
 if($preview)
-    printed_boxes();
+  rotate(180)
+    main_assembly();
 
 //echo(pbox_insert(box1));
 //echo(pbox_screw(box1));

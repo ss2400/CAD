@@ -115,8 +115,8 @@ module box1_base_stl()
     box1_base_holes();
   }
 
-module box1_assembly()
-  assembly("box1") {
+module main_assembly()
+  assembly("main") {
     if(Shell) {
       stl_colour(pp1_colour)
         render()
@@ -136,7 +136,8 @@ module box1_assembly()
 
   }
 
-box1_assembly();
+if($preview)
+    main_assembly();
 
 echo(pbox_insert(box1));
 echo(pbox_screw(box1));
