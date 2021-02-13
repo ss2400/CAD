@@ -22,6 +22,11 @@ use <OpenSCAD_Libs/models/096Oled.scad>
 use <OpenSCAD_Libs/096_oled_mnt.scad>
 use <OpenSCAD_Libs/nano_mnt.scad>
 
+/* [STL element to export] */
+Shell       = 0;    // Shell [0:No, 1:Yes]
+FPanel      = 1;    // Front panel [0:No, 1:Yes]
+Components  = 0;    // Parts
+
 /* Box dimensions */
 Width   = 60; // Width (X)
 Depth   = 55; // Depth (Y)
@@ -49,13 +54,13 @@ OledPosZ = base_thickness;
 /* Connector dimensions */
 Cable = 6.5;
 
-/* [STL element to export] */
-Shell       = 1;    // Shell [0:No, 1:Yes]
-FPanel      = 1;    // Front panel [0:No, 1:Yes]
-Components  = 1;    // Parts
-
-//box1 = pbox(name = "box1", wall = wall, top_t = top_thickness, base_t = base_thickness, radius = inner_rad, size = [Width, Depth, Height], screw = M2_cap_screw, ridges = [8, 1]);
-box1 = pbox(name = "box1", wall = wall, top_t = top_thickness, base_t = base_thickness, radius = inner_rad, size = [Width, Depth, Height], screw = M2_cap_screw);
+box1 = pbox(name = "box1",
+            wall = wall,
+            top_t = top_thickness,
+            base_t = base_thickness,
+            radius = inner_rad,
+            size = [Width, Depth, Height],
+            screw = M2_cap_screw);
 
 module box1_internal_additions() {
 }
@@ -71,11 +76,11 @@ module box1_holes() {
 }
 
 module box1_case_stl() {
-     pbox(box1) {
-        box1_internal_additions();
-        box1_holes();
-        box1_external_additions();
-     }
+  pbox(box1) {
+    box1_internal_additions();
+    box1_holes();
+    box1_external_additions();
+  }
 }
 
 module box1_base_additions() {
@@ -135,9 +140,8 @@ module main_assembly()
     }
 
   }
-
-if($preview)
-    main_assembly();
+  
+main_assembly();
 
 echo(pbox_insert(box1));
 echo(pbox_screw(box1));
