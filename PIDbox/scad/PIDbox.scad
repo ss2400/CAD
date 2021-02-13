@@ -5,7 +5,6 @@ $pp1_colour = "Orange";
 $pp2_colour = "SlateGray";
 
 include <NopSCADlib/core.scad>
-include <NopSCADlib/vitamins/toggles.scad>
 include <NopSCADlib/vitamins/ssrs.scad>
 include <NopSCADlib/vitamins/iecs.scad>
 use <NopSCADlib/printed/foot.scad>
@@ -16,9 +15,9 @@ use <OpenSCAD_Libs/nema515snap_mnt.scad>
 use <OpenSCAD_Libs/kcouple_mnt.scad>
 
 /* Box dimensions */
-Width   = 145;      // Width (X)
-Depth   = 86;       // Depth (Y)
-Height  = 125;      // Height (Z)
+Width   = 135;      // Width (X)  145
+Depth   = 80;       // Depth (Y)  86
+Height  = 115;      // Height (Z) 125
 Ridges  = [8,1];
 wall    = 3;        // Box side wall thickness
 top_thickness = 4;  // Fixed box panel thickness
@@ -33,38 +32,38 @@ PidPosZ = base_thickness;
 
 /* Switch dimensions */
 SwPosX = 44;
-SwPosY = 18;
+SwPosY = 16;
 SwPosZ = base_thickness/2;
-SwDia  = 12.4;
+SwDia  = 12.2;
 
 /* Thermocouple connector dimensions */
 ThermPosX = -44;
-ThermPosY = -18;
+ThermPosY = -16;
 ThermPosZ = base_thickness;
 
 /* Load connector dimensions */
-LoadPosX = 55;
+LoadPosX = 50;
 LoadPosY = 0;
 LoadPosZ = 0;
 
 /* Line connector dimensions */
-LinePosX = -55;
+LinePosX = -50;
 LinePosY = 0;
 LinePosZ = 0;
 
 /* SSR connector dimensions */
-SsrPosX = 0;
-SsrPosY = 0;
-SsrPosZ = 0;
-SsrWidth  = 62;
-SsrHeight = 45;
-SsrScrewDist = 47;
-SsrThick = 6;
+SSRPosX = 0;
+SSRPosY = 0;
+SSRPosZ = 0;
+SSRWidth  = 57;
+SSRHeight = 44;
+SSRScrewDist = 47;
+SSRThick = 10;
 
 /* [STL element to export] */
 Shell       = 1;    // Show shell [0:No, 1:Yes]
 FPanel      = 0;    // Show front panel [0:No, 1:Yes]
-Components  = 1;    // Show components
+Components  = 0;    // Show components
 
 foot = Foot(d = 13, h = 5, t = 2, r = 1, screw = M3_cs_cap_screw);
 module foot_stl() foot(foot);
@@ -101,8 +100,8 @@ module box1_internal_additions() {
       cylinder(d2 = d, d1 = d + 2 * h, h = h);
 
   // SSR mount expansion
-  translate([SsrPosX,SsrPosY,SsrThick/2])
-    rounded_cube_xy([SsrWidth+12,SsrHeight+6,SsrThick], r=3, xy_center=true, z_center=true);
+  translate([SSRPosX,SSRPosY,SSRThick/2])
+    rounded_cube_xy([SSRWidth+12,SSRHeight+6,SSRThick], r=3, xy_center=true, z_center=true);
 }
 
 module box1_external_additions() {
@@ -112,9 +111,9 @@ module box1_external_additions() {
     cylinder(d1 = d, d2 = d + 2 * amp, h = amp);
   
   // SSR component model
-  if (Components)
-    translate([SsrPosX,SsrPosY,SsrPosZ-5])
-      %ssr_assembly(type=SSR25DA, screw=M4_cap_screw, thickness=top_thickness);
+  //if (Components)
+    //translate([SSRPosX,SSRPosY,SSRPosZ-5])
+      //%SSR_assembly(type=SSR25DA, screw=M4_cap_screw, thickness=top_thickness);
       
   // Line connector model
   if (Components)
@@ -133,21 +132,21 @@ module box1_holes() {
     teardrop_plus(r = screw_pilot_hole(foot_screw(foot)), h = 10, center = true);
 
   // SSR cutout
-  translate([SsrPosX,SsrPosY,0]) {
+  translate([SSRPosX,SSRPosY,0]) {
     difference() {
-      rounded_cube_xy([SsrWidth+4,SsrHeight+4,SsrThick*3], r=1, xy_center=true, z_center=true);
+      rounded_cube_xy([SSRWidth+4,SSRHeight+4,SSRThick*3], r=1, xy_center=true, z_center=true);
       // SSR mount wings
       translate([-26,0,0])
-        rounded_cube_xy([20,9,SsrThick*3], r=4.49, xy_center=true, z_center=true);
+        rounded_cube_xy([20,10,SSRThick*3], r=4.99, xy_center=true, z_center=true);
       translate([26,0,0])
-        rounded_cube_xy([20,9,SsrThick*3], r=4.49, xy_center=true, z_center=true);
+        rounded_cube_xy([20,10,SSRThick*3], r=4.99, xy_center=true, z_center=true);
     }
     // SSR screw slots
     for (i=[0:0.2:2]) {
-      translate([-SsrScrewDist/2-i+1,0,0])
-      cylinder(d=4.5, h=SsrThick*3);
-      translate([SsrScrewDist/2+i-1,0,0])
-      cylinder(d=4.5, h=SsrThick*3);
+      translate([-SSRScrewDist/2-i+1,0,0])
+      cylinder(d=4.5, h=SSRThick*3);
+      translate([SSRScrewDist/2+i-1,0,0])
+      cylinder(d=4.5, h=SSRThick*3);
     }
   }
   
@@ -193,7 +192,7 @@ module box1_base_holes() {
 
   // PID cutout
   translate([PidPosX,PidPosY,PidPosZ])
-    ta4_cutout();
+    ta4_cutout(offset=7);
 }
 
 module box1_base_stl() {
@@ -203,8 +202,8 @@ module box1_base_stl() {
   }
 }
 
-module box1_assembly() {
-  assembly("box1") {
+module main_assembly() {
+  assembly("main") {
     explode(50, true) {
 
       // Case
@@ -212,16 +211,16 @@ module box1_assembly() {
         render() box1_case_stl();
 
         // Box screws and heat inserts
-        pbox_inserts(box1);
-        pbox_base_screws(box1);
+        %pbox_inserts(box1);
+        %pbox_base_screws(box1);
     
         // Feet
         box1_feet_positions() {
-          foot_assembly(0, foot);
+          %foot_assembly(0, foot);
 
           vflip()
             translate_z(foot_thickness(foot))
-              screw_and_washer(foot_screw(foot), 6);
+              %screw_and_washer(foot_screw(foot), 6);
         }
       }
       
@@ -235,13 +234,7 @@ module box1_assembly() {
   }
 }
 
-module main_assembly()
-  assembly("main") {
-    rotate(180)
-      box1_assembly();
-}
-
-if($preview)
+rotate(180)
   main_assembly();
 
 echo(pbox_insert(box1));
