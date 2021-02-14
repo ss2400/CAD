@@ -17,8 +17,8 @@ use <OpenSCAD_Libs/kcouple_mnt.scad>
 /* [STL element to export] */
 Shell       = 1;    // Show shell [0:No, 1:Yes]
 FPanel      = 0;    // Show front panel [0:No, 1:Yes]
-Feet        = 1;    // Show feet
-Components  = 0;    // Show components
+SingleFoot  = 0;    // Show one foot [0:No, 1:Yes]
+Components  = 0;    // Show components [0:No, 1:Yes]
 
 /* [Box dimensions] */
 Width   = 135;      // Width (X)  145
@@ -63,8 +63,10 @@ SSRPosY = 0;
 SSRPosZ = 0;
 SSRWidth  = 57;
 SSRHeight = 44;
-SSRScrewDist = 47;
+SSRScrewDist = 47.6;
 SSRThick = 10;
+
+if(SingleFoot) foot_stl();
 
 foot = Foot(d = 13, h = 5, t = 2, r = 1, screw = M3_cs_cap_screw);
 module foot_stl() foot(foot);
@@ -102,19 +104,20 @@ module box1_internal_additions() {
 
   // SSR mount expansion
   translate([SSRPosX,SSRPosY,SSRThick/2])
-    rounded_cube_xy([SSRWidth+12,SSRHeight+6,SSRThick], r=3, xy_center=true, z_center=true);
+    rounded_cube_xy([SSRWidth+12,SSRHeight+10,SSRThick], r=3, xy_center=true, z_center=true);
 }
 
 module box1_external_additions() {
+  // Foot supports
   amp = pbox_ridges(box1).y + eps;
   d = foot_diameter(foot) + 1;
   box1_feet_positions()
     cylinder(d1 = d, d2 = d + 2 * amp, h = amp);
   
   // SSR component model
-  //if (Components)
-    //translate([SSRPosX,SSRPosY,SSRPosZ-5])
-      //%SSR_assembly(type=SSR25DA, screw=M4_cap_screw, thickness=top_thickness);
+  if (Components)
+    translate([SSRPosX,SSRPosY,SSRPosZ-5])
+      %SSR_assembly(type=SSR25DA, screw=M4_cap_screw, thickness=top_thickness);
       
   // Line connector model
   if (Components)
@@ -135,22 +138,22 @@ module box1_holes() {
   // SSR cutout
   translate([SSRPosX,SSRPosY,0]) {
     difference() {
-      rounded_cube_xy([SSRWidth+4,SSRHeight+4,SSRThick*3], r=1, xy_center=true, z_center=true);
+      rounded_cube_xy([SSRWidth+3,SSRHeight+3,SSRThick*3], r=1, xy_center=true, z_center=true);
       // SSR mount wings
-      translate([-26,0,0])
-        rounded_cube_xy([20,10,SSRThick*3], r=4.99, xy_center=true, z_center=true);
-      translate([26,0,0])
-        rounded_cube_xy([20,10,SSRThick*3], r=4.99, xy_center=true, z_center=true);
+      translate([-29,0,0])
+        rounded_cube_xy([20,11,SSRThick*3], r=4.99, xy_center=true, z_center=true);
+      translate([29,0,0])
+        rounded_cube_xy([20,11,SSRThick*3], r=4.99, xy_center=true, z_center=true);
     }
     // SSR screw slots
-    for (i=[0:0.2:2]) {
-      translate([-SSRScrewDist/2-i+1,0,0])
-      cylinder(d=4.5, h=SSRThick*3);
-      translate([SSRScrewDist/2+i-1,0,0])
-      cylinder(d=4.5, h=SSRThick*3);
+    for (i=[0:0.2:1]) {
+      translate([-SSRScrewDist/2-i+0.5,0,0])
+        cylinder(d=4.5, h=SSRThick*3);
+      translate([SSRScrewDist/2+i-0.5,0,0])
+        cylinder(d=4.5, h=SSRThick*3);
     }
   }
-  
+
   // Line cutout
   translate([LinePosX,LinePosY,LinePosZ])
     vflip() rotate(90) iec_holes(type=IEC_inlet, insert=true);
@@ -214,19 +217,19 @@ module main_assembly() {
         // Box screws and heat inserts
         %pbox_inserts(box1);
         %pbox_base_screws(box1);
-      }
 
-      // Feet
-      if(Feet) {
-        box1_feet_positions() {
-          foot_assembly(0, foot);
+        // Feet
+        if(Components) {
+          box1_feet_positions() {
+            foot_assembly(0, foot);
 
-          vflip()
-            translate_z(foot_thickness(foot))
-              %screw_and_washer(foot_screw(foot), 6);
+            vflip()
+              translate_z(foot_thickness(foot))
+                %screw_and_washer(foot_screw(foot), 6);
+          }
         }
       }
-
+      
       // Base
       if(FPanel) {        
         translate_z(Height + top_thickness + 2 * eps)
