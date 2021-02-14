@@ -117,7 +117,7 @@ module box1_external_additions() {
   // SSR component model
   if (Components)
     translate([SSRPosX,SSRPosY,SSRPosZ-5])
-      %SSR_assembly(type=SSR25DA, screw=M4_cap_screw, thickness=top_thickness);
+      %ssr_assembly(type=SSR25DA, screw=M4_cap_screw, thickness=top_thickness);
       
   // Line connector model
   if (Components)
