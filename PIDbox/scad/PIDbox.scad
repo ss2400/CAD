@@ -242,8 +242,8 @@ module main_assembly() {
 
 rotate(180)
   main_assembly();
-    
-echo(pbox_insert(box1));
-echo(pbox_screw(box1));
-echo(pbox_screw_inset(box1));
-echo(pbox_screw_length(box1));
+
+
+echo("Insert for base screws: ", pbox_insert(box1));
+echo("Length of base screw: ",pbox_screw_length(box1));
+echo("Foot screw type: ", pbox_screw(box1));
