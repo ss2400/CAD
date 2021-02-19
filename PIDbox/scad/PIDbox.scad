@@ -146,11 +146,14 @@ module box1_holes() {
         rounded_cube_xy([20,11,SSRThick*3], r=4.99, xy_center=true, z_center=true);
     }
     // SSR screw slots
-    for (i=[0:0.2:1]) {
-      translate([-SSRScrewDist/2-i+0.5,0,0])
-        cylinder(d=4.5, h=SSRThick*3);
-      translate([SSRScrewDist/2+i-0.5,0,0])
-        cylinder(d=4.5, h=SSRThick*3);
+    for (i=[-1:1]) {
+      hull() {
+        translate([i*SSRScrewDist/2+0.5,0,0])
+          cylinder(d=4.5, h=SSRThick*3);
+        
+        translate([i*SSRScrewDist/2-0.5,0,0])
+          cylinder(d=4.5, h=SSRThick*3);
+      }
     }
   }
 
@@ -242,8 +245,8 @@ module main_assembly() {
 
 rotate(180)
   main_assembly();
-    
-echo(pbox_insert(box1));
-echo(pbox_screw(box1));
-echo(pbox_screw_inset(box1));
-echo(pbox_screw_length(box1));
+
+
+echo("Insert for base screws: ", pbox_insert(box1));
+echo("Length of base screw: ",pbox_screw_length(box1));
+echo("Foot screw type: ", pbox_screw(box1));
