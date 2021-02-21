@@ -18,7 +18,7 @@ use <OpenSCAD_Libs/kcouple_mnt.scad>
 Shell       = 0;    // Show shell [0:No, 1:Yes]
 FPanel      = 1;    // Show front panel [0:No, 1:Yes]
 SingleFoot  = 0;    // Show one foot [0:No, 1:Yes]
-Components  = 0;    // Show components [0:No, 1:Yes]
+Components  = 1;    // Show components [0:No, 1:Yes]
 
 /* [Box dimensions] */
 Width   = 135;      // Width (X)  145
@@ -127,7 +127,7 @@ module box1_external_additions() {
   // Load connector model
   if (Components)
     translate([LoadPosX,LoadPosY,LoadPosZ])
-      hflip() %nema515snap();
+      hflip() %nema515snap_component();
 }
 
 module box1_holes() {
@@ -178,13 +178,13 @@ module box1_base_additions() {
   // Thermocouple mount
   translate([ThermPosX,ThermPosY,ThermPosZ]) {
     kcouple_mount();
-      if (Components) %kcouple();
+      if (Components) %kcouple_component();
   }
   
   // PID mount
   translate([PidPosX,PidPosY,PidPosZ]) {
     ta4_mount(thick=10, offset=7);
-      if (Components) %ta4(offset=7);  
+      if (Components) %ta4_component(offset=7);  
   }
 }
 
