@@ -63,10 +63,12 @@ module fpanel_internal_additions() {
 
 module fpanel_holes() {
   // OLED cutout
-  hull()
-    for (i=[0:Thick])
-      translate([ScreenPosX, ScreenPosY, i])
-        rounded_rectangle(ScreenSize+[i,i,0], r=2, center=true);
+  hull() {
+    translate([ScreenPosX, ScreenPosY, 0])
+      rounded_rectangle(ScreenSize, r=2, center=true);
+    translate([ScreenPosX, ScreenPosY, Thick])
+      rounded_rectangle(ScreenSize+[Thick,Thick,0], r=2, center=true);
+  }
         
   // Dial cutout
   translate([DialPosX, DialPosY, 0])
