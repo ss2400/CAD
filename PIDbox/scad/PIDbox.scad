@@ -15,10 +15,10 @@ use <OpenSCAD_Libs/nema515snap_mnt.scad>
 use <OpenSCAD_Libs/kcouple_mnt.scad>
 
 /* [STL element to export] */
-Shell       = 0;    // Show shell [0:No, 1:Yes]
-FPanel      = 1;    // Show front panel [0:No, 1:Yes]
+Shell       = 1;    // Show shell [0:No, 1:Yes]
+FPanel      = 0;    // Show front panel [0:No, 1:Yes]
 SingleFoot  = 0;    // Show one foot [0:No, 1:Yes]
-Components  = 1;    // Show components [0:No, 1:Yes]
+Components  = 0;    // Show components [0:No, 1:Yes]
 
 /* [Box dimensions] */
 Width   = 135;      // Width (X)  145
