@@ -30,7 +30,7 @@ DialPosY = 2.6;
 /* Screen dimensions */
 ScreenPosX = DialPosX - 27;
 ScreenPosY = DialPosY - 1;
-ScreenSize = [24,13,1];
+ScreenSize = [24,13,0.1];
 
 /* Screw dimensions */
 ScrewType = M3_cs_cap_screw;
@@ -53,7 +53,7 @@ profile = [
 ];
 
 /* Original face */
-if($preview)
+if(0)
   translate([-42.9, 17, 5])
     rotate([180,0,0])
       %import("original/M18_soldering_front_panel.STL", convexity =4);
@@ -63,9 +63,10 @@ module fpanel_internal_additions() {
 
 module fpanel_holes() {
   // OLED cutout
-  for (i=[0:0.1:Thick])
-    translate([ScreenPosX, ScreenPosY, i])
-      rounded_rectangle(ScreenSize+[i,i,0], r=2, center=true);
+  hull()
+    for (i=[0:Thick])
+      translate([ScreenPosX, ScreenPosY, i])
+        rounded_rectangle(ScreenSize+[i,i,0], r=2, center=true);
         
   // Dial cutout
   translate([DialPosX, DialPosY, 0])
