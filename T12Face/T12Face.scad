@@ -44,7 +44,7 @@ Screw4 = [ l1/2 - 4.8, h/2 - 5, Thick+0.5];
 translate(Screw1+[0,0,10])
   %screw(ScrewType, ScrewLen);
 
-/* Face Shape */
+/* Face Shape (slight taper) */
 profile = [
     [ -l2/2 + r, -h/2 + r, r],
     [ -l1/2 + r,  h/2 - r, r],
@@ -63,9 +63,9 @@ module fpanel_internal_additions() {
 
 module fpanel_holes() {
   // OLED cutout
-  for (i=[0:0.1:Thick+1])
-    translate([ScreenPosX, ScreenPosY, 0.49+i])
-      rounded_rectangle(ScreenSize+[i,i,0], r=2);
+  for (i=[0:0.1:Thick])
+    translate([ScreenPosX, ScreenPosY, i])
+      rounded_rectangle(ScreenSize+[i,i,0], r=2, center=true);
         
   // Dial cutout
   translate([DialPosX, DialPosY, 0])
