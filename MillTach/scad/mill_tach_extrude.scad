@@ -25,7 +25,7 @@ use <OpenSCAD_Libs/nano_mnt.scad>
 /* [STL element to export] */
 Shell       = 0;    // Shell [0:No, 1:Yes]
 FPanel      = 1;    // Front panel [0:No, 1:Yes]
-Components  = 0;    // Parts
+Components  = 1;    // Parts
 
 /* Box dimensions */
 Width   = 60; // Width (X)
@@ -90,7 +90,7 @@ module box1_base_additions() {
       stl_colour(pp2_colour)
         nano_mount(h=NanoHeight);
       if(Components)
-        %nano(h=NanoHeight);
+        %nano_component(h=NanoHeight);
     }
 
   // OLED Display
@@ -103,7 +103,7 @@ module box1_base_additions() {
   stl_colour(pp1_colour) {
     translate([OledPosX, OledPosY, OledPosZ])
       rotate([180,0,0])
-        oled_posts(type=OledType);
+        oled_mount(type=OledType);
   }
 }
 

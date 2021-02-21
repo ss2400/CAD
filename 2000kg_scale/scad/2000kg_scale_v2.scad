@@ -18,7 +18,7 @@ Length = 110;
 Width = 70;
 Height = 42;
 Thick = 2.4;
-m = 0.6;
+m = 0.4;
 
 /* Arduino dimensions */
 NanoPosX = 10;
@@ -115,7 +115,7 @@ module fpanel_internal_additions() {
   stl_colour(pp2_colour) {
     translate([OledPosX, OledPosY, OledPosZ])
       rotate([90,0,90])
-        oled_posts(type=DORHEA);
+        oled_mount(type=DORHEA);
   }
 }
 
@@ -142,13 +142,13 @@ module bshell_internal_additions() {
   // Nano Mount
   translate([NanoPosX, NanoPosY, NanoPosZ]) {
     stl_colour(pp1_colour) nano_mount(h=NanoHeight);
-    %nano(h=NanoHeight);
+    %nano_component(h=NanoHeight);
     }
 
   // HX711 Mount
   translate([HX711PosX, HX711PosY, HX711PosZ]) {
     stl_colour(pp1_colour) hx711_mount(h=HX711Height);
-    %hx711(h=HX711Height);
+    %hx711_component(h=HX711Height);
   }
 
   // Battery Box
