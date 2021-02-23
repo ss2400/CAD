@@ -1,10 +1,16 @@
 // test_extrude.scad
 
-$fn = 40;
+fn=72;
+$fn=72;
 
-include <NopSCADlib/lib.scad>
-include <Round-Anything/MinkowskiRound.scad>
-include <Round-Anything/polyround.scad>
+use <scad-utils/transformations.scad>
+use <scad-utils/shapes.scad>
+use <list-comprehension-demos/skin.scad>
+use <list-comprehension-demos/extrusion.scad>
+
+//include <NopSCADlib/lib.scad>
+//include <Round-Anything/MinkowskiRound.scad>
+//include <Round-Anything/polyround.scad>
 
 /* Box dimensions */
 Width1    = 75; // Width (X)
@@ -19,25 +25,34 @@ HeightSw = 18;
 AngleSw = -14;
 
 module body() {
-  Height = Depth*Depth/(Height2-Height1);
-  Width = Depth*Depth/(Width2-Width1);
+  CalcH = fn*fn/(Height2-Height1);
+  CalcW = fn*fn/(Width2-Width1);
+  function Width(i) = Width1+(i*i/CalcW);
+  function Height(i) = Height1+(i*i/CalcH);
   
-  for(i=[0:0.5:Depth])
-    difference() {
-      translate([i-Depth/2,0,(i*i/Height)/2])
-        rotate([0,-AngleFace*i/Depth,0])
-          rounded_cube_yz([0.6,Width1+(i*i/Width),Height1+(i*i/Height)],
-                          r=3,
-                          xy_center=true,
-                          z_center=true);
-                          
-      translate([i-Depth/2,0,((i*i/Height-Wall*2)/2+Wall)])
-        rotate([0,-AngleFace*i/Depth,0])
-          rounded_cube_yz([0.7,Width1+(i*i/Width)-Wall*2,Height1+(i*i/Height-Wall*2)],
-                          r=3,
-                          xy_center=true,
-                          z_center=true);
-    }
+  function Y(i) = i*i/(CalcH*2);
+  function Z(i) = Depth*i/fn-Depth/fn;
+
+  outside = [for(i=[0:fn])
+    transform(rotation([0,0,0])*
+              translation([0,Y(i),Z(i)]), 
+              rounded_rectangle_profile(size=[Width(i),Height(i) ],
+                                        r=4,
+                                        fn=fn)
+              )];
+
+  inside = [for(i=[0:fn]) 
+    transform(rotation([0,0,0])*
+              translation([0,i*i/(CalcH*2-Wall*4),Z(i)]), 
+              rounded_rectangle_profile(size=[Width(i)-Wall*2, Height(i)-Wall*2],
+                                        r=4,
+                                        fn=fn)
+              )];
+              
+  difference() {  
+    skin(outside);
+    skin(inside);
+  }
 }
 
 module switch() {
@@ -46,7 +61,7 @@ module switch() {
       extrudeWithRadius(length=4,r1=-3.0,r2=0.95,fn=50)
         circle(11,$fn=30);
 }
-
+/*
 difference() {
   union() {
     body();
@@ -60,3 +75,12 @@ difference() {
     rotate([0,AngleSw,0])
       cylinder(d=30, h=Wall, center=true);
 }
+
+difference() {
+  body();
+  translate([0,0,Depth+10-3])
+    rotate([AngleFace,0,0])
+      cube([Width2*2, Height2*2, 20], center = true);
+}
+*/
+body();
