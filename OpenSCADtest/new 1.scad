@@ -15,22 +15,40 @@ AngleFace = 15;
 HeightSw = 18;
 AngleSw = -14;
 
-Range = 9;
+module myBox() {
+  Range = 9;
+  myScaleX = [for (i=[0:1:Range]) 1+i*i/400];
+  myScaleY = [for (i=[0:1:Range]) 1+i*i/200];
+  myMoveY =  [for (i=[0:1:Range]) 1+i*i/19.92];
+  myZ = [for (i=[0:1:Range]) i*10];
 
-//myScale = [1,  2,  4];
-//myZ = [0, 15, 22];
-myScaleX = [for (i=[0:1:Range]) 1+i*i/400];
-myScaleY = [for (i=[0:1:Range]) 1+i*i/200];
-myMoveY =  [for (i=[0:1:Range]) 1+i*i/19.92];
-myZ = [for (i=[0:1:Range]) i*10];
+  myProfs = [for (x=[0:1:Range])
+            apply(back(myMoveY[x])*
+                  yscale(myScaleY[x])*
+                  xscale(myScaleX[x]),
+                  rect([Width1,Height1],rounding=5, center=true))];
 
-myProfs = [for (x=[0:1:Range])
-          apply(back(myMoveY[x])*yscale(myScaleY[x])*xscale(myScaleX[x]), rect([Width1,Height1],rounding=5, center=true))];
-          //apply(xscale(myScale[x]), rect([15,15],rounding=5))];
-          //apply(right(1)*xscale(x*x/10), circle(d = 15, $fn = 80))];
+  skin(myProfs, z=myZ, slices=25,sampling="segment",method="reindex"); 
 
-skin(myProfs, z=myZ, slices=10, method="reindex"); 
+  echo(myScaleX);
+  echo(myScaleY);
+  echo(myZ);
+  //echo(myProfs);
+}
 
-echo(myScaleX);
-echo(myScaleY);
-echo(myZ);
+module myBox2() {
+  xrot(90)down(1.5)
+  difference() {
+    skin(
+        [square([2,.2],center=true),
+         circle($fn=64,r=0.5)], z=[0,3],
+        slices=40,sampling="segment",method="reindex");
+    skin(
+        [square([1.9,.1],center=true),
+         circle($fn=64,r=0.45)], z=[-.01,3.01],
+        slices=40,sampling="segment",method="reindex");
+  }
+}
+
+myBox();
+//myBox2();
