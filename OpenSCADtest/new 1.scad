@@ -1,5 +1,4 @@
 include <BOSL2/std.scad>
-//include <BOSL2/rounding.scad>
 include <BOSL2/hull.scad>
 include <BOSL2/skin.scad>
 
@@ -15,7 +14,7 @@ Height1   = 25; // Height (Z)
 Height2   = 45; // Height (Z)
 Radius    =  6; // External filet
 Wall      =  3;
-AngleFace = -25;
+AngleFace = 0;
 
 module myBox() {
   RatioW = pow(Points-1,2)/(Width2/Width1-1);
@@ -73,6 +72,7 @@ module myBox3() {
   InnerZ = [for (i=[0:1:Points-1]) i * (Depth+0.02)/(Points-1)-0.01];
   Angle  = [for (i=[0:1:Points-1]) i * AngleFace/(Points-1)];
   
+  
   // Baseline 2D shape
   OuterBase = trapezoid(h =Height1,
                         w1=Width1,
@@ -83,36 +83,48 @@ module myBox3() {
                         w1=Width1-Wall*2,
                         w2=Width1-WidthDiff-Wall*2,
                         rounding=Radius-Wall);
+  // 3D face
+  FinalBase = prismoid(size1=[Width2,Height2],
+                       size2=[(Width2-WidthDiff),Height2],
+                       h =10,
+                       rounding=Radius);
+
 
   // 3D profiles
   ProfOuter = [for(i=[0:1:Points-1])
                 apply(
+                  xrot(a=Angle[i],cp=[0,0,OuterZ[i]])*
                   back(MoveY[i])*
                   xscale(ScaleX[i])*
-                  yscale(ScaleY[i])*
-                  xrot(a=Angle[i],cp=[0,-Height1/2,OuterZ[i]]),
+                  yscale(ScaleY[i]),
                   path3d(OuterBase, OuterZ[i])
                 )
               ];
 
   ProfInner = [for(i=[0:1:Points-1])
                 apply(
+                  xrot(a=Angle[i],cp=[0,0,InnerZ[i]])*
                   back(MoveY[i])*
                   xscale(ScaleX[i])*
-                  yscale(ScaleY[i])*
-                  xrot(a=Angle[i],cp=[0,-Height1/2,InnerZ[i]]),
+                  yscale(ScaleY[i]),
                   path3d(InnerBase, InnerZ[i])
                 )
               ];
   
+  //Profile = [apply(path3d(FinalBase),
+  //            up(100,path3d(FinalBase)))];
+
   // Skin and hollow
   difference() {
     skin(ProfOuter,slices=10,method="tangent");
     skin(ProfInner,slices=2,sampling="segment",method="direct");
   }
+  //skin(FinalBase,slices=10,method="tangent");
   echo(MoveY);
+  echo(Angle);
 }
-translate([0,0,90]) #cube([50,50,0.1]);
+
+translate([0,0,90]) rotate([AngleFace,0,0]) %cube([50,50,0.1], center=true);
 //myBox();
 //myBox2();
 myBox3();
