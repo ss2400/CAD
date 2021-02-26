@@ -23,20 +23,20 @@ module myBox() {
   RatioH = pow(Points-1,2)/((Height2/Height1)-1);
   RatioY = pow(Points-1,2)/((Height2-Height1)/2);
   ScaleX = [for (i=[0:1:Points-1]) 1+(i*i/RatioW)];
-  ScaleY = [for (i=[0:1:Points-1]) 1+(i*i/RatioH)];
+  ScaleH = [for (i=[0:1:Points-1]) 1+(i*i/RatioH)];
   MoveY =  [for (i=[0:1:Points-1]) 1+(i*i/RatioY)];
   OuterZ = [for (i=[0:1:Points-1]) i*Depth/(Points-1)];
   InnerZ = [for (i=[0:1:Points-1]) i*(Depth+0.02)/(Points-1)-0.01];
 
   ProfOuter = [for (x=[0:1:Points-1])
                 apply(back(MoveY[x])*
-                  yscale(ScaleY[x])*
+                  yscale(ScaleH[x])*
                   xscale(ScaleX[x]),
                   rect([Width1,Height1],rounding=5, center=true))];
 
   ProfInner = [for (x=[0:1:Points-1])
                 apply(back(MoveY[x])*
-                  yscale(ScaleY[x])*
+                  yscale(ScaleH[x])*
                   xscale(ScaleX[x]),
                   rect([Width1-Wall*2,Height1-Wall*2],rounding=5, center=true))];
 
@@ -45,7 +45,7 @@ module myBox() {
     skin(ProfInner, z=InnerZ, slices=2 ,sampling="segment",method="reindex"); 
   }
   echo(ScaleX);
-  echo(ScaleY);
+  echo(ScaleH);
   echo(OuterZ);
   echo(InnerZ);
 }
@@ -70,33 +70,31 @@ module myBox3() {
   Start = 0;
   Incr = 1;
   End = Points-1;
-  
   EndF = PointsF-1;
 
-  ScaleX1 = [for (i=[Start:Incr:End]) 1+(i*i) * ((Width2/Width1)-1)/pow(End,2)];
-  ScaleX2 = [for (i=[Start:Incr:End]) 1+(i*i) * ((Width2-WidthDiff)/(Width1-WidthDiff)-1)/pow(End,2)];
-  ScaleY  = [for (i=[Start:Incr:End]) 1+(i*i) * ((Height2/Height1)-1)/pow(End,2)];
+  ScaleW1 = [for (i=[Start:Incr:End]) 1+(i*i) * ((Width2/Width1)-1)/pow(End,2)];
+  ScaleW2 = [for (i=[Start:Incr:End]) 1+(i*i) * ((Width2-WidthDiff)/(Width1-WidthDiff)-1)/pow(End,2)];
+  ScaleH  = [for (i=[Start:Incr:End]) 1+(i*i) * ((Height2/Height1)-1)/pow(End,2)];
   MoveY   = [for (i=[Start:Incr:End]) Height1/2+(i*i) * ((Height2-Height1)/2)/pow(End,2)];
   OuterZ  = [for (i=[Start:Incr:End]) i * Depth/(End)];
   InnerZ  = [for (i=[Start:Incr:End]) i * (Depth+0.02)/(End)-0.01];
   Angle   = [for (i=[Start:Incr:End]) i * FaceAngle/(End)];
-
-  FaceX  = [for (i=[Start:Incr:EndF]) FaceRadius-FaceRadius*cos(90*i/EndF)];
-  FaceZ  = [for (i=[Start:Incr:EndF]) FaceRadius*sin(90*i/EndF)];
+  FaceX   = [for (i=[Start:Incr:EndF]) FaceRadius-FaceRadius*cos(90*i/EndF)];
+  FaceZ   = [for (i=[Start:Incr:EndF]) FaceRadius*sin(90*i/EndF)];
 
   // Baseline 2D shape
-  function OuterBase(i) = trapezoid(h =Height1*ScaleY[i],
-                                    w1=Width1*ScaleX1[i],
-                                    w2=(Width1-WidthDiff)*ScaleX2[i],
+  function BaseOuter(i) = trapezoid(h =Height1*ScaleH[i],
+                                    w1=Width1*ScaleW1[i],
+                                    w2=(Width1-WidthDiff)*ScaleW2[i],
                                     rounding=Radius);
-
-  function InnerBase(i) = trapezoid(h =Height1*ScaleY[i]-Wall*2,
-                                    w1=Width1*ScaleX1[i]-Wall*2,
-                                    w2=(Width1-WidthDiff)*ScaleX2[i]-Wall*2,
+  
+  function BaseInner(i) = trapezoid(h =Height1*ScaleH[i]-Wall*2,
+                                    w1=Width1*ScaleW1[i]-Wall*2,
+                                    w2=(Width1-WidthDiff)*ScaleW2[i]-Wall*2,
                                     rounding=Radius-Wall);
 
-  // 3D face
-  function Face(i) = trapezoid(h =Height2-2*FaceX[i],
+  // 2D face shape
+  function BaseFace(i) = trapezoid(h =Height2-2*FaceX[i],
                                w1=Width2-2*FaceX[i],
                                w2=(Width2-WidthDiff)-2*FaceX[i],
                                rounding=Radius);
@@ -106,13 +104,13 @@ module myBox3() {
                 apply(
                   xrot(a=Angle[i],cp=[0,0,OuterZ[i]])*
                   back(MoveY[i]),
-                  path3d(OuterBase(i), OuterZ[i])
+                  path3d(BaseOuter(i), OuterZ[i])
                 ),
               // Face
               for(i=[0:1:EndF])
                 apply(xrot(a=Angle[End],cp=[0,0,OuterZ[End]])*
                   back(MoveY[End]),
-                  path3d(Face(i), Depth+FaceZ[i])
+                  path3d(BaseFace(i), Depth+FaceZ[i])
                 )
               ];
 
@@ -120,19 +118,19 @@ module myBox3() {
                 apply(
                   xrot(a=Angle[i],cp=[0,0,InnerZ[i]])*
                   back(MoveY[i]),
-                  path3d(InnerBase(i), InnerZ[i])
+                  path3d(BaseInner(i), InnerZ[i])
                 ),
                 // Face
                 apply(
                   xrot(a=Angle[End],cp=[0,0,InnerZ[End]])*
                   back(MoveY[End]),
-                  path3d(InnerBase(End), InnerZ[End]+FaceRadius)
+                  path3d(BaseInner(End), InnerZ[End]+FaceRadius)
                 )
               ];
 
   // Skin and hollow
   difference() {
-    skin(ProfOuter,slices=10,method="reindex");
+    skin(ProfOuter,slices=10,sampling="segment",method="reindex");
     skin(ProfInner,slices=2,sampling="segment",method="direct");
   }
 
@@ -141,9 +139,9 @@ module myBox3() {
   //echo(OuterZ);
   //echo(MoveY);
   //echo(Angle);
-  //echo(Height1*ScaleY);
-  //echo(Width1*ScaleX1);
-  //echo((Width1-WidthDiff)*ScaleX2);
+  //echo(Height1*ScaleH);
+  //echo(Width1*ScaleW1);
+  //echo((Width1-WidthDiff)*ScaleW2);
 }
 
 module myBox4() {
