@@ -1,6 +1,7 @@
 include <BOSL2/std.scad>
 include <BOSL2/hull.scad>
 include <BOSL2/skin.scad>
+include <BOSL2/rounding.scad>
 
 $fn=100;
 Points = 10;
@@ -14,11 +15,11 @@ Height1   = 25; // Height (Z)
 Height2   = 45; // Height (Z)
 Radius    =  6; // External filet
 Wall      =  3;
-AngleFace = 0;
+AngleFace = -25;
 
 module myBox() {
-  RatioW = pow(Points-1,2)/(Width2/Width1-1);
-  RatioH = pow(Points-1,2)/(Height2/Height1-1);
+  RatioW = pow(Points-1,2)/((Width2/Width1)-1);
+  RatioH = pow(Points-1,2)/((Height2/Height1)-1);
   RatioY = pow(Points-1,2)/((Height2-Height1)/2);
   ScaleX = [for (i=[0:1:Points-1]) 1+(i*i/RatioW)];
   ScaleY = [for (i=[0:1:Points-1]) 1+(i*i/RatioH)];
@@ -65,8 +66,9 @@ module myBox2() {
 // *** So far, this method is the best ***
 module myBox3() {
   // Lists
-  ScaleX = [for (i=[0:1:Points-1]) 1+(i*i) * (Width2/Width1-1)/pow(Points-1,2)];
-  ScaleY = [for (i=[0:1:Points-1]) 1+(i*i) * (Height2/Height1-1)/pow(Points-1,2)];
+  ScaleX1 = [for (i=[0:1:Points-1]) 1+(i*i) * ((Width2/Width1)-1)/pow(Points-1,2)];
+  ScaleX2 = [for (i=[0:1:Points-1]) 1+(i*i) * ((Width2-WidthDiff)/(Width1-WidthDiff)-1)/pow(Points-1,2)];
+  ScaleY = [for (i=[0:1:Points-1]) 1+(i*i) * ((Height2/Height1)-1)/pow(Points-1,2)];
   MoveY  = [for (i=[0:1:Points-1]) Height1/2+(i*i) * ((Height2-Height1)/2)/pow(Points-1,2)];
   OuterZ = [for (i=[0:1:Points-1]) i * Depth/(Points-1)];
   InnerZ = [for (i=[0:1:Points-1]) i * (Depth+0.02)/(Points-1)-0.01];
@@ -74,57 +76,63 @@ module myBox3() {
   
   
   // Baseline 2D shape
-  OuterBase = trapezoid(h =Height1,
-                        w1=Width1,
-                        w2=Width1-WidthDiff,
-                        rounding=Radius);
+  function OuterBase(i) = trapezoid(h =Height1*ScaleY[i],
+                                    w1=Width1*ScaleX1[i],
+                                    w2=(Width1-WidthDiff)*ScaleX2[i],
+                                    rounding=Radius);
 
-  InnerBase = trapezoid(h =Height1-Wall*2,
-                        w1=Width1-Wall*2,
-                        w2=Width1-WidthDiff-Wall*2,
-                        rounding=Radius-Wall);
-  // 3D face
-  FinalBase = prismoid(size1=[Width2,Height2],
-                       size2=[(Width2-WidthDiff),Height2],
-                       h =10,
-                       rounding=Radius);
-
+  function InnerBase(i) = trapezoid(h =Height1*ScaleY[i]-Wall*2,
+                                    w1=Width1*ScaleX1[i]-Wall*2,
+                                    w2=(Width1-WidthDiff)*ScaleX2[i]-Wall*2,
+                                    rounding=Radius-Wall);
 
   // 3D profiles
   ProfOuter = [for(i=[0:1:Points-1])
                 apply(
                   xrot(a=Angle[i],cp=[0,0,OuterZ[i]])*
-                  back(MoveY[i])*
-                  xscale(ScaleX[i])*
-                  yscale(ScaleY[i]),
-                  path3d(OuterBase, OuterZ[i])
+                  back(MoveY[i]),
+                  path3d(OuterBase(i), OuterZ[i])
                 )
               ];
 
   ProfInner = [for(i=[0:1:Points-1])
                 apply(
                   xrot(a=Angle[i],cp=[0,0,InnerZ[i]])*
-                  back(MoveY[i])*
-                  xscale(ScaleX[i])*
-                  yscale(ScaleY[i]),
-                  path3d(InnerBase, InnerZ[i])
+                  back(MoveY[i]),
+                  path3d(InnerBase(i), InnerZ[i])
                 )
               ];
-  
-  //Profile = [apply(path3d(FinalBase),
-  //            up(100,path3d(FinalBase)))];
 
   // Skin and hollow
   difference() {
-    skin(ProfOuter,slices=10,method="tangent");
+    skin(ProfOuter,slices=20,method="direct");
     skin(ProfInner,slices=2,sampling="segment",method="direct");
   }
-  //skin(FinalBase,slices=10,method="tangent");
-  echo(MoveY);
-  echo(Angle);
+/*
+  // 3D face
+  translate([0,0,OuterZ[Points-1]])
+    rotate([AngleFace,0,0]) 
+      translate([0,MoveY[Points-1],0])
+        rounded_prism(trapezoid(h =Height2,
+                                w1=Width2,
+                                w2=Width2-WidthDiff,
+                                rounding=Radius),
+                                height=3,
+                                joint_top=1.5);
+*/
+  //skin(Face,slices=10,method="tangent");
+  //echo(MoveY);
+  //echo(Angle);
+  //echo(Height1*ScaleY);
+  //echo(Width1*ScaleX1);
+  //echo((Width1-WidthDiff)*ScaleX2);
 }
 
-translate([0,0,90]) rotate([AngleFace,0,0]) %cube([50,50,0.1], center=true);
+//translate([0,0,90])
+  //rotate([AngleFace,0,0])
+    //translate([-Width2/2,0,0])
+      //%cube([Width2,Height2,0.1]);
+
 //myBox();
 //myBox2();
 myBox3();
