@@ -3,7 +3,7 @@ include <BOSL2/hull.scad>
 include <BOSL2/skin.scad>
 
 $fn=100;
-Points = 20;
+Points = 10;
 PointsF = 14;
 
 /* [Box dimensions] */
@@ -16,7 +16,7 @@ Height2   = 45; // Height (Z)
 Radius    =  6; // External filet
 Wall      =  3;
 FaceAngle = -25;
-FaceRadius = 2;
+FaceRadius = 4;
 
 module myBox() {
   RatioW = pow(Points-1,2)/((Width2/Width1)-1);
