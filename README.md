@@ -1,3 +1,3 @@
 # CAD Projects
 
-OpenSCAD and FreeCAD Link Branch projects
+OpenSCAD and FreeCAD projects
