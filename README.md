@@ -1,3 +1,3 @@
 # CAD Projects
 
-OpenSCAD and FreeCAD based
+OpenSCAD and FreeCAD projects
