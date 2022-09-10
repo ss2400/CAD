@@ -10,5 +10,6 @@ Project 4 Smaller case (smaller LED, OLED screen kits)
 
 Project 5: Larger case (KSGER V2, V3)
 
+These designs work with generic snap in connectors for the batteries.
 
 
