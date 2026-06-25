@@ -3,6 +3,8 @@ $fn=100;
 include <BOSL/constants.scad>
 use <BOSL/shapes.scad>
 
+use <openscad-fillets/fillets3d.scad>
+
 Height=40;
 Diameter=90.2;
 PortDiam=31;
@@ -38,7 +40,8 @@ module main() {
   difference() {
     // Top
     translate([0,0,40])
-      cylinder(h=2,d=94);
+      topFillet(t = 2, r = 2, s = 100)     
+      #cylinder(h=2,d=94);
     // Vents
     polar_array(VentCount, Diameter/2-14) {
       cylinder(h=2*Height, r=4);
